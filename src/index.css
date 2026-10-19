@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #07090e;
+  color: #e5e7eb;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background: rgba(16, 185, 129, 0.35);
+}
+
+/* Slim tactical scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1f2937 transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-xl border border-emerald-900/50 bg-obsidian-900/80 backdrop-blur-sm;
+  }
+  .panel-header {
+    @apply flex items-center justify-between gap-2 border-b border-emerald-900/40 px-4 py-2.5;
+  }
+  .mono-label {
+    @apply font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-500/90;
+  }
+  .btn-tactical {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.14em] transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn-tactical bg-emerald-500 text-obsidian-950 shadow-[0_0_24px_rgba(16,185,129,0.35)] hover:bg-emerald-400 hover:shadow-[0_0_32px_rgba(16,185,129,0.55)];
+  }
+  .btn-ghost {
+    @apply btn-tactical border border-emerald-800/70 text-emerald-300 hover:border-emerald-500 hover:text-emerald-200;
+  }
+  .field-input {
+    @apply w-full rounded-lg border border-emerald-900/60 bg-obsidian-800/80 px-3 py-2.5 font-mono text-sm text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40;
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(16, 185, 129, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16, 185, 129, 0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+}
+
+.crt-flicker {
+  animation: flicker 4s linear infinite;
+}
