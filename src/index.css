@@ -23,6 +23,22 @@
   --accent-amber: #f59e0b;
   --accent-indigo: #c5c6ff;
   --accent-coral: #ff5252;
+  --duration-stagger: 40ms;
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --duration-medium: 350ms;
+  --duration-slow: 400ms;
+  --duration-very-slow: 500ms;
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: ease-in-out;
+  --blur-small: 2px;
+  --icon-swap-dur: var(--duration-fast);
+  --icon-swap-blur: var(--blur-small);
+  --icon-swap-start-scale: 0.25;
+  --acc-expand: var(--duration-fast);
+  --acc-collapse: var(--duration-fast);
+  --acc-chevron: var(--duration-fast);
+  --acc-ease: var(--ease-smooth-out);
 }
 
 html,
@@ -177,12 +193,76 @@ html[data-density='comfortable'] .density-detail {
   animation: flicker 4s linear infinite;
 }
 
-@keyframes platformMorph {
-  0% { opacity: 0; transform: scale(0.72) rotate(-8deg); }
-  18%, 82% { opacity: 1; transform: scale(1) rotate(0deg); }
-  100% { opacity: 0; transform: scale(0.72) rotate(8deg); }
+.t-icon-swap {
+  position: relative;
+  display: inline-grid;
 }
 
-.animate-platform-morph {
-  animation: platformMorph 1.5s ease-in-out both;
+.t-icon-swap .t-icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--icon-swap-dur) var(--ease-in-out),
+    filter var(--icon-swap-dur) var(--ease-in-out),
+    transform var(--icon-swap-dur) var(--ease-in-out);
+}
+
+.t-icon-swap[data-state='active'] .t-icon[data-icon='active'] {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+.t-icon-swap[data-state='active'] .t-icon[data-icon='inactive'] {
+  opacity: 0;
+  filter: blur(var(--icon-swap-blur));
+  transform: scale(var(--icon-swap-start-scale));
+}
+
+.t-acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
+}
+
+.t-acc[data-open='true'] .t-acc-panel {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--acc-expand) var(--acc-ease);
+}
+
+.t-acc-panel-inner {
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(2px);
+  transition:
+    opacity var(--acc-collapse) var(--acc-ease),
+    filter var(--acc-collapse) var(--acc-ease);
+}
+
+.t-acc[data-open='true'] .t-acc-panel-inner {
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--acc-expand) var(--acc-ease),
+    filter var(--acc-expand) var(--acc-ease);
+}
+
+.t-acc-chevron {
+  display: inline-flex;
+  transform: scaleY(1);
+  transform-origin: center;
+  transition: transform var(--acc-chevron) var(--acc-ease);
+}
+
+.t-acc[data-open='true'] .t-acc-chevron {
+  transform: scaleY(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-icon-swap .t-icon,
+  .t-acc-panel,
+  .t-acc-panel-inner,
+  .t-acc-chevron {
+    animation: none !important;
+    transition: none !important;
+  }
 }

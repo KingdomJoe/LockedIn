@@ -78,10 +78,10 @@ function parseSmartInput(value: string): ProfileInputs {
 function PlatformBadge() {
   const [index, setIndex] = useState(0);
   const platforms = [
-    <Github key="github" className="h-4 w-4" aria-label="GitHub" />,
-    <span key="x" className="font-mono text-sm font-bold" aria-label="X">X</span>,
-    <Linkedin key="linkedin" className="h-4 w-4" aria-label="LinkedIn" />,
-    <Globe2 key="globe" className="h-4 w-4" aria-label="Portfolio" />,
+    <Github className="h-4 w-4" aria-label="GitHub" />,
+    <span className="font-mono text-sm font-bold" aria-label="X">X</span>,
+    <Linkedin className="h-4 w-4" aria-label="LinkedIn" />,
+    <Globe2 className="h-4 w-4" aria-label="Portfolio" />,
   ];
 
   useEffect(() => {
@@ -91,7 +91,17 @@ function PlatformBadge() {
 
   return (
     <span className="relative grid h-10 w-10 place-items-center rounded-full border-[1.5px] border-[#2E3440] bg-[#111317] text-[#12cc0f] shadow-[2px_2px_0_rgba(0,0,0,.6)]">
-      <span key={index} className="animate-platform-morph">{platforms[index]}</span>
+      <span className="t-icon-swap" data-state="active" aria-live="polite">
+        {platforms.map((platform, platformIndex) => (
+          <span
+            key={platformIndex}
+            className="t-icon"
+            data-icon={platformIndex === index ? 'active' : 'inactive'}
+          >
+            {platform}
+          </span>
+        ))}
+      </span>
     </span>
   );
 }
@@ -206,7 +216,7 @@ export default function LandingPage({ inputs, phase, error, onInputsChange, onDe
           </div></div>
         </section>
 
-        <section id="faqs" className="border-t border-[#252932] px-5 py-16 sm:px-6"><div className="mx-auto max-w-4xl"><p className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#12cc0f]">04 // Frequently asked questions</p><h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.03em]">The builder architecture.</h2><p className="mt-2 text-sm text-[#8C92A4]">Deep-dive answers for the telemetry core, agents, and model.</p><div className="mt-8 space-y-2">{faqs.map((faq, index) => { const open = openFaq === index; return <div key={faq.question} className="border-[1.5px] border-[#2E3440] bg-[#111317]"><button onClick={() => setOpenFaq(open ? null : index)} className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"><span className="font-mono text-xs font-bold text-[#F4F5F8]"><span className="mr-3 text-[#12cc0f]">{String(index + 1).padStart(2, '0')} //</span>{faq.question}</span><ChevronDown className={`h-4 w-4 shrink-0 text-[#8C92A4] transition-transform ${open ? 'rotate-180' : ''}`} /></button>{open && <div className="border-t border-[#252932] px-4 pb-5 pt-4 text-sm leading-relaxed text-[#8C92A4]">{faq.answer}</div>}</div>; })}</div></div></section>
+        <section id="faqs" className="border-t border-[#252932] px-5 py-16 sm:px-6"><div className="mx-auto max-w-4xl"><p className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#12cc0f]">04 // Frequently asked questions</p><h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.03em]">The builder architecture.</h2><p className="mt-2 text-sm text-[#8C92A4]">Deep-dive answers for the telemetry core, agents, and model.</p><div className="mt-8 space-y-2">{faqs.map((faq, index) => { const open = openFaq === index; return <div key={faq.question} className="t-acc border-[1.5px] border-[#2E3440] bg-[#111317]" data-open={open}><button onClick={() => setOpenFaq(open ? null : index)} className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"><span className="font-mono text-xs font-bold text-[#F4F5F8]"><span className="mr-3 text-[#12cc0f]">{String(index + 1).padStart(2, '0')} //</span>{faq.question}</span><span className="t-acc-chevron"><ChevronDown className="h-4 w-4 shrink-0 text-[#8C92A4]" /></span></button><div className="t-acc-panel"><div className="t-acc-panel-inner border-t border-[#252932] px-4 pb-5 pt-4 text-sm leading-relaxed text-[#8C92A4]">{faq.answer}</div></div></div>; })}</div></div></section>
       </main>
 
       <footer className="border-t border-[#252932] px-5 py-6 sm:px-8"><div className="mx-auto flex max-w-7xl flex-col gap-3 font-mono text-[10px] text-[#8C92A4] sm:flex-row sm:items-center sm:justify-between"><span className="font-bold text-[#F4F5F8]">&lt;•&gt; LockedIn</span><span>PROOF-OF-WORK ENGINE // OPTIMUS TELEMETRY</span><span className="text-[#12cc0f]">● ALL OPTI-BOT FLEETS OPERATIONAL</span></div></footer>
