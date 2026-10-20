@@ -169,6 +169,10 @@ html[data-density='compact'] .btn-base {
   padding-bottom: 0.55rem;
 }
 
+html[data-density='comfortable'] .density-detail {
+  display: none !important;
+}
+
 .crt-flicker {
   animation: flicker 4s linear infinite;
 }

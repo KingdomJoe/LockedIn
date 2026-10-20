@@ -144,6 +144,14 @@ export default {
           '96%': { opacity: '1' },
           '98%': { opacity: '0.7' },
         },
+        newsIn: {
+          from: { opacity: '0', transform: 'translateX(18px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        newsProgress: {
+          from: { transform: 'scaleX(0)' },
+          to: { transform: 'scaleX(1)' },
+        },
       },
       animation: {
         scanline: 'scanline 1.6s linear infinite',
@@ -152,6 +160,8 @@ export default {
         'rise-in': 'riseIn 0.45s ease-out both',
         'laser-sweep': 'laserSweep 1.8s ease-in-out infinite',
         flicker: 'flicker 4s linear infinite',
+        'news-in': 'newsIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both',
+        'news-progress': 'newsProgress 5.2s linear both',
       },
     },
   },

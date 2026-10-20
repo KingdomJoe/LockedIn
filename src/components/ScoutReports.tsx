@@ -99,8 +99,8 @@ export default function ScoutReports({
     <div className="mx-auto max-w-[1440px] p-4 sm:p-5">
       <ViewHeader
         index="04"
-        title="Scout Reports"
-        description="Firecrawl research across live opportunity surfaces, scored against the current proof-of-work index. Every row carries a source domain and a calibrated match."
+        title="Live Firecrawl Scouts"
+        description="Firecrawl research across live opportunity surfaces, scored against your current proof-of-work profile. Every row carries a source domain and a calibrated match."
         actions={
           <button onClick={runScout} disabled={scouting} className="btn-primary !px-3 !py-2 !text-[10px]">
             <RefreshCw className={`h-3.5 w-3.5 ${scouting ? 'animate-spin' : ''}`} />
@@ -108,7 +108,7 @@ export default function ScoutReports({
           </button>
         }
         metrics={[
-          { label: 'Firecrawl mode', value: firecrawlLive ? 'Live key' : 'Cached judge' },
+          { label: 'Source mode', value: firecrawlLive ? 'Live key' : 'Cached' },
           { label: 'Sources inspected', value: `${profile.scout.urlsInspected}` },
           { label: 'High-match targets', value: `${highMatch}` },
           { label: 'Last scan', value: `${profile.scout.lastScanMs}ms` },
@@ -151,15 +151,15 @@ export default function ScoutReports({
               </div>
             </div>
             <p className="mt-3 rounded border border-subtle bg-well p-3 font-mono text-[9px] leading-relaxed text-muted">
-              Cached mode remains fully available without a Firecrawl key. Add a key in Engine Config
-              to fetch fresh page markdown through the URL autopsy pipeline.
+              Cached evidence remains fully available without a Firecrawl key. Live page fetches
+              unlock when a source key is configured.
             </p>
           </div>
         </section>
 
         <section className="panel">
           <div className="panel-header">
-            <h2 className="mono-label text-content">Hackathon index</h2>
+            <h2 className="mono-label text-content">Hackathon shortlist</h2>
             <span className="font-mono text-[9px] text-accent-amber">
               {profile.scout.hackathons.length} programmes
             </span>

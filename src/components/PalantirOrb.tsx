@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CompetencyAxis, GitHubRepo } from '@/types/optimus';
+import type {
+  CompetencyAxis,
+  GitHubRepo,
+  LinkedSignal,
+  LinkedSignalSource,
+} from '@/types/optimus';
 import { langColor } from '@/services/langColors';
 import { soundEngine } from '@/utils/soundEngine';
 
@@ -8,6 +13,7 @@ interface PalantirOrbProps {
   username: string;
   repos: GitHubRepo[];
   languages: { name: string; share: number }[];
+  signals: LinkedSignal[];
   boostedPOffer: number;
   auraLevel: number;
   strengths: CompetencyAxis[];
@@ -35,6 +41,32 @@ interface Satellite {
   speed: number;
   pinned?: { x: number; y: number };
 }
+
+interface SourceAvatar {
+  id: LinkedSignalSource;
+  label: string;
+  short: string;
+  color: string;
+  textColor: string;
+  imageUrl?: string;
+}
+
+const SOURCE_AVATARS: Record<
+  LinkedSignalSource,
+  Omit<SourceAvatar, 'id' | 'imageUrl'> & { useProfileImage?: boolean }
+> = {
+  github: {
+    label: 'GitHub',
+    short: 'GH',
+    color: '#12cc0f',
+    textColor: '#041f04',
+    useProfileImage: true,
+  },
+  linkedin: { label: 'LinkedIn', short: 'in', color: '#0A66C2', textColor: '#F4F5F8' },
+  x: { label: 'X', short: 'X', color: '#F4F5F8', textColor: '#090808' },
+  portfolio: { label: 'Portfolio', short: 'WEB', color: '#C5C6FF', textColor: '#090808' },
+  certificate: { label: 'Certificates', short: 'C', color: '#F59E0B', textColor: '#2B1204' },
+};
 
 const TAU = Math.PI * 2;
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -138,6 +170,7 @@ export default function PalantirOrb({
   username,
   repos,
   languages,
+  signals,
   boostedPOffer,
   auraLevel,
   strengths,
@@ -216,6 +249,25 @@ export default function PalantirOrb({
       },
     ];
   }, [languages, totalStars]);
+
+  const sourceAvatars = useMemo<SourceAvatar[]>(() => {
+    const seen = new Set<LinkedSignalSource>();
+    const avatars: SourceAvatar[] = [];
+    signals.forEach((signal) => {
+      if (seen.has(signal.source)) return;
+      seen.add(signal.source);
+      const meta = SOURCE_AVATARS[signal.source];
+      avatars.push({
+        id: signal.source,
+        label: meta.label,
+        short: meta.short,
+        color: meta.color,
+        textColor: meta.textColor,
+        imageUrl: meta.useProfileImage ? avatarUrl : undefined,
+      });
+    });
+    return avatars;
+  }, [signals, avatarUrl]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -340,6 +392,64 @@ export default function PalantirOrb({
           depth: (point.z + 1) / 2,
         };
       });
+
+      const sourceCount = Math.max(1, sourceAvatars.length);
+      const sourceRadius = R * 1.38;
+      const sourceNodes = sourceAvatars.map((source, index) => {
+        const angle = elapsed * 0.13 + (index / sourceCount) * TAU;
+        const x = cx + Math.cos(angle) * sourceRadius;
+        const y = cy + Math.sin(angle) * sourceRadius * 0.92 + Math.sin(elapsed * 0.9 + index) * 1.2;
+        const z = Math.sin(angle) * 0.7;
+        return { source, x, y, z, depth: (z + 1) / 2 };
+      });
+
+      const drawSourceNode = (node: (typeof sourceNodes)[number]) => {
+        const alpha = 0.52 + node.depth * 0.48;
+        const radius = compact ? 8.5 : 9.5;
+        const image = avatarImgRef.current;
+
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(Math.atan2(node.y - cy, node.x - cx)) * R * 1.04, cy + Math.sin(Math.atan2(node.y - cy, node.x - cx)) * R * 1.04);
+        ctx.lineTo(node.x, node.y);
+        ctx.setLineDash([2, 4]);
+        ctx.strokeStyle = rgba(node.source.color, 0.08 + node.depth * 0.12);
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius, 0, TAU);
+        ctx.clip();
+        ctx.fillStyle = 'rgba(7, 12, 11, 0.96)';
+        ctx.fillRect(node.x - radius, node.y - radius, radius * 2, radius * 2);
+        if (node.source.imageUrl && image?.complete && image.naturalWidth > 0) {
+          ctx.drawImage(image, node.x - radius, node.y - radius, radius * 2, radius * 2);
+        } else {
+          ctx.fillStyle = node.source.color;
+          ctx.globalAlpha = alpha;
+          ctx.fillRect(node.x - radius, node.y - radius, radius * 2, radius * 2);
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = node.source.textColor;
+          ctx.font = `700 ${Math.max(6, Math.round(radius * 0.82))}px "JetBrains Mono", monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(node.source.short, node.x, node.y + 0.5);
+        }
+        ctx.restore();
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius, 0, TAU);
+        ctx.strokeStyle = rgba(node.source.color, 0.58 * alpha + 0.18);
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius + 2.5, 0, TAU);
+        ctx.strokeStyle = rgba(node.source.color, 0.12 * alpha);
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+      };
 
       const drawConnector = (node: (typeof projected)[number], front: boolean) => {
         const alpha = front ? 0.1 + node.depth * 0.22 : 0.035;
@@ -652,6 +762,8 @@ export default function PalantirOrb({
           else drawOptiNode(node, alpha);
         });
 
+      sourceNodes.forEach(drawSourceNode);
+
       ctx.beginPath();
       ctx.arc(cx, cy, outerR, 0, TAU);
       ctx.strokeStyle = rgba('#2E3440', 0.9);
@@ -694,7 +806,7 @@ export default function PalantirOrb({
 
       frameRef.current = requestAnimationFrame(draw);
     },
-    [satellites, username]
+    [satellites, username, sourceAvatars, compact]
   );
 
   useEffect(() => {
@@ -789,9 +901,9 @@ export default function PalantirOrb({
           finishDrag();
         }}
         onKeyDown={onKeyDown}
-        aria-label={`Interactive 3D Palantir orbital index for ${username}. Drag or use arrow keys to rotate.`}
+        aria-label={`Interactive 3D Palantir orbital profile for ${username} with linked source avatars. Drag or use arrow keys to rotate.`}
       >
-        3D orbital index for {username}
+        3D orbital profile for {username}
       </canvas>
 
       <div className="pointer-events-none absolute bottom-[32px] left-1 z-20 w-[112px] rounded border-1.5 border-primary/35 bg-canvas/95 p-1.5 shadow-hard">

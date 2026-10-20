@@ -10,7 +10,6 @@ import {
   LockKeyhole,
   Menu,
   Search,
-  Settings2,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -23,7 +22,7 @@ import {
   resyncProfileLinks,
   type ProfileInputs,
 } from '@/services/optimusEngine';
-import { getEngineMode, loadEngineConfig, saveEngineConfig } from '@/services/engineConfig';
+import { loadEngineConfig, saveEngineConfig } from '@/services/engineConfig';
 import { applyAppearance, loadAppearance, saveAppearance } from '@/services/appearance';
 import { analyzeTarget } from '@/services/customAnalysis';
 import {
@@ -47,12 +46,12 @@ type Phase = 'onboarding' | 'incinerating' | 'deployed' | 'error';
 type SidebarView = AppView | 'settings';
 
 const VIEW_LABELS: Record<SidebarView, string> = {
-  overview: 'Orbital Overview',
-  bots: 'Opti-Bots',
-  eligibility: 'Eligibility & Opportunity',
-  scout: 'Scout Reports',
-  news: 'Developer News',
-  dispatch: 'Dispatch / Newsletter',
+  overview: 'Palantir Overview',
+  bots: 'Autonomous OptiBots',
+  eligibility: 'Job & Role Matcher',
+  scout: 'Live Firecrawl Scouts',
+  news: 'Dev Pulse',
+  dispatch: 'Your Weekly Dispatch',
   settings: 'Settings',
 };
 
@@ -199,8 +198,8 @@ export default function App() {
   const deploy = useCallback(async (raw: ProfileInputs, options?: { keepShell?: boolean }) => {
     const username = raw.username.trim();
     if (!username) {
-      if (options?.keepShell) setSwitchError('Enter a GitHub username to switch the index.');
-      else setError('Enter a GitHub username or choose a preset to build the index.');
+      if (options?.keepShell) setSwitchError('Enter a GitHub username to switch profiles.');
+      else setError('Enter a GitHub username or choose a preset to start.');
       return;
     }
 
@@ -226,7 +225,7 @@ export default function App() {
       if (!options?.keepShell) setPhase('deployed');
       soundEngine.playJevMatrixLock();
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : 'The research index could not be built.';
+      const message = cause instanceof Error ? cause.message : 'The proof-of-work profile could not be built.';
       if (options?.keepShell) {
         setSwitchError(message);
       } else {
@@ -240,7 +239,7 @@ export default function App() {
 
   const saveProfileLinks = useCallback(
     async (raw: ProfileInputs): Promise<{ ok: boolean; message?: string }> => {
-      if (!profile) return { ok: false, message: 'No active research index to update.' };
+      if (!profile) return { ok: false, message: 'No active profile to update.' };
       const username = raw.username.trim();
       if (!username) return { ok: false, message: 'A GitHub handle is required.' };
 
@@ -266,8 +265,8 @@ export default function App() {
         return {
           ok: true,
           message: rebuilding
-            ? `Index rebuilt from @${username}. Palantir and the default Opti-Bots have been re-provisioned.`
-            : 'Profile links synced. Palantir and the default Opti-Bots are running against the updated sources.',
+            ? `Profile rebuilt from @${username}. Palantir and the default OptiBots have been re-provisioned.`
+            : 'Profile links synced. Palantir and the default OptiBots are running against the updated sources.',
         };
       } catch (cause) {
         return {
@@ -398,38 +397,31 @@ export default function App() {
               LockedIn
             </span>
             <span className="hidden font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-muted sm:inline">
-              Technical Index
+              Command Center
             </span>
           </div>
-          <button
-            onClick={() => openEngine('config')}
-            className="btn-ghost shrink-0 !px-2.5 !py-2 !text-[9px]"
-          >
-            <Settings2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Engine Config</span>
-          </button>
         </header>
 
         <main className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:py-12">
           <section className="flex flex-col justify-center">
             <p className="flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-primary">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Optimus Research Engine · v3.1 · Jev System-1
+              Proof-of-Work Engine · v3.1 · Local + live
             </p>
             <h1 className="mt-4 max-w-[13ch] font-display text-[42px] font-bold leading-[0.98] tracking-[-0.04em] text-content sm:text-[56px] lg:text-[64px]">
-              Proof-of-work speaks first.
+              Time to lock in.
             </h1>
             <p className="mt-5 max-w-[58ch] text-[13px] leading-[1.7] text-muted sm:text-[14px]">
-              LockedIn reads public engineering evidence, not resume adjectives. Enter any GitHub
-              handle to build a calibrated technical index across repositories, languages, research
-              signals, and open opportunities.
+              LockedIn reads public engineering evidence, not resume adjectives. Drop your footprint
+              and get a calibrated proof-of-work profile across repositories, languages, and open
+              opportunities.
             </p>
 
             <div className="mt-6 grid grid-cols-3 gap-2">
               {[
-                ['Jev', '24 heads'],
-                ['Latency', '~140ms'],
-                ['Mode', 'Zero-auth'],
+                ['Calibration', '24 signals'],
+                ['Speed', '~140ms'],
+                ['Setup', 'No keys'],
               ].map(([label, value]) => (
                 <div key={label} className="rounded border border-subtle bg-well p-3">
                   <p className="label-caps">{label}</p>
@@ -440,9 +432,8 @@ export default function App() {
 
             <div className="mt-6 flex items-start gap-3 border-l-2 border-primary/50 pl-3">
               <p className="max-w-[52ch] text-[11px] leading-relaxed text-muted">
-                The engine runs fully in judge mode without keys: unauthenticated GitHub REST,
-                deterministic RLCD calibration, and a cached Firecrawl dataset. Add private keys only
-                when you want live provider calls.
+                The engine starts without keys: public GitHub telemetry, calibrated eligibility, and
+                a cached scout dataset. Live source access is optional.
               </p>
             </div>
           </section>
@@ -450,9 +441,9 @@ export default function App() {
           <section className="card-hard p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3 border-b border-subtle pb-3">
               <div>
-                <p className="label-caps text-primary">New research index</p>
+                <p className="label-caps text-primary">Drop your footprint</p>
                 <h2 className="mt-1 font-display text-[22px] font-bold tracking-[-0.02em] text-content">
-                  Build from a GitHub handle
+                  Start with your GitHub handle
                 </h2>
               </div>
               <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[8px] font-bold tracking-[0.06em] text-primary">
@@ -565,12 +556,12 @@ export default function App() {
                 ) : (
                   <ArrowRight className="h-4 w-4" />
                 )}
-                {phase === 'incinerating' ? 'Compiling Research Index…' : 'Build Research Index'}
+                {phase === 'incinerating' ? 'Locking in…' : 'Build proof of work'}
               </button>
             </form>
 
             <div className="mt-5 border-t border-subtle pt-4">
-              <p className="label-caps mb-2">Research presets</p>
+              <p className="label-caps mb-2">Try a builder</p>
               <div className="grid grid-cols-2 gap-2">
                 {PRESETS.map((preset) => (
                   <button
@@ -636,7 +627,7 @@ export default function App() {
         />
 
         <footer className="border-t border-subtle px-4 py-3 text-center font-mono text-[9px] text-muted">
-          LockedIn · Optimus Research Engine · Jev System-1 × Forge Strategist × Firecrawl Scout
+          LockedIn · Proof-of-Work Engine · Calibration × Strategy × Live Scouting
         </footer>
 
         <div className="pointer-events-none fixed bottom-4 right-3 z-50 flex flex-col items-end gap-1.5">
@@ -652,8 +643,6 @@ export default function App() {
       </div>
     );
   }
-
-  const engineMode = getEngineMode(engineConfig);
 
   return (
     <div className="min-h-screen bg-canvas lg:flex">
@@ -680,7 +669,7 @@ export default function App() {
 
           <div className="min-w-0 shrink-0">
             <p className="hidden font-mono text-[8px] font-bold uppercase tracking-[0.1em] text-muted sm:block">
-              LockedIn / Research index
+              LockedIn / Command Center
             </p>
             <p className="truncate font-display text-[13px] font-semibold text-content sm:text-[14px]">
               {VIEW_LABELS[view]}
@@ -744,13 +733,6 @@ export default function App() {
             >
               {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
             </button>
-            <button
-              onClick={() => openEngine('config')}
-              className="btn-ghost !h-8 !px-2.5 !py-0 !text-[9px]"
-            >
-              <Settings2 className="h-3.5 w-3.5" />
-              <span className="hidden md:inline">Engine</span>
-            </button>
           </div>
         </header>
 
@@ -785,15 +767,6 @@ export default function App() {
             <OptiBotsPage
               profile={profile}
               inputs={inputs}
-              engineMode={engineMode}
-              liveCount={
-                [engineConfig.firecrawlKey, engineConfig.llmKey, engineConfig.jevEndpoint].filter(
-                  (value) => value.trim()
-                ).length
-              }
-              llmModel={engineConfig.llmModel}
-              onOpenAgents={() => openEngine('agents')}
-              onOpenSettings={() => setView('settings')}
               onNavigate={(next) => setView(next)}
             />
           )}
@@ -835,7 +808,6 @@ export default function App() {
             <DispatchNewsletter
               profile={profile}
               onNavigate={(next) => setView(next)}
-              onOpenSettings={() => openEngine('config')}
             />
           )}
 
@@ -843,8 +815,6 @@ export default function App() {
             <SettingsPage
               profile={profile}
               inputs={inputs}
-              config={engineConfig}
-              engineMode={engineMode}
               appearance={appearance}
               muted={muted}
               onSaveProfile={saveProfileLinks}

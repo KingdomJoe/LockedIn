@@ -1,7 +1,7 @@
 # Forge Strategist
 
 **Role:** System-2 narrative and application synthesis.
-**Default providers:** Z.ai `glm-5.3-flash`, OpenRouter, Gemini, OpenAI.
+**Backend:** configurable synthesis endpoint; provider details stay server-side.
 
 ## Purpose
 
@@ -54,10 +54,10 @@ traceable to the supplied profile.
 ## Streaming Rules
 
 1. Stream tokens to the UI as they arrive; do not wait for the full completion.
-2. Show provider, model, and error state in the console.
+2. Show request status and error state in the console.
 3. Support abort and ignore late tokens after unmount.
-4. If the key is absent or the provider fails, keep the deterministic dossier
-   and show a compact error; never block the judge path.
+4. If the key is absent or synthesis fails, keep the deterministic dossier and
+   show a compact error; never block the local path.
 5. Never log API keys or full request headers.
 
 ## Counterfactual Forge

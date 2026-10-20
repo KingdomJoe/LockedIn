@@ -55,7 +55,7 @@ export const DENSITIES: { id: ThemeDensity; label: string; description: string }
   {
     id: 'comfortable',
     label: 'Comfortable',
-    description: 'More breathing room for long research sessions and reviews.',
+    description: 'Fewer secondary details, softer spacing, and a calmer workspace.',
   },
 ];
 

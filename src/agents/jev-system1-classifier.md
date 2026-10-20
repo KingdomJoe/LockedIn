@@ -79,6 +79,6 @@ never logged.
 
 ## Failure Modes
 
-- Non-2xx response → show status and provider message, keep local scores.
+- Non-2xx response → show status and endpoint message, keep local scores.
 - Invalid JSON → mark `schema_error_rate` as unknown, keep local scores.
 - Timeout → abort and fall back without blocking Loop 4.

@@ -61,8 +61,8 @@ export default function DeveloperNews({ profile, onNavigate }: DeveloperNewsProp
     <div className="mx-auto max-w-[1440px] p-4 sm:p-5">
       <ViewHeader
         index="05"
-        title="Developer News"
-        description="A personalized technical newsroom indexed for the current stack, repository cadence, and opportunity profile."
+        title="Dev Pulse"
+        description="A personalized newsroom tuned to your stack, repository cadence, and opportunity profile."
         actions={
           <div className="flex flex-wrap gap-1.5">
             {FILTERS.map((item) => (
@@ -84,7 +84,7 @@ export default function DeveloperNews({ profile, onNavigate }: DeveloperNewsProp
           </div>
         }
         metrics={[
-          { label: 'Stories indexed', value: `${stories.length}` },
+          { label: 'Stories', value: `${stories.length}` },
           { label: 'Primary stack', value: profile.languages[0]?.name ?? 'Polyglot' },
           { label: 'Fresh repos', value: `${profile.freshRepos}` },
           { label: 'Edition', value: 'Daily' },
@@ -152,7 +152,7 @@ export default function DeveloperNews({ profile, onNavigate }: DeveloperNewsProp
                   onClick={() => onNavigate('dispatch')}
                   className="inline-flex items-center gap-1 font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-primary hover:text-primary-bright"
                 >
-                  Discuss in Dispatch <ArrowUpRight className="h-3 w-3" />
+                  Open your Dispatch <ArrowUpRight className="h-3 w-3" />
                 </button>
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function DeveloperNews({ profile, onNavigate }: DeveloperNewsProp
 
           <section className="panel">
             <div className="panel-header">
-              <h2 className="mono-label text-content">Index</h2>
+              <h2 className="mono-label text-content">Pulse feed</h2>
               <span className="font-mono text-[9px] text-muted">{visible.length} notes</span>
             </div>
             <div className="divide-y divide-subtle">

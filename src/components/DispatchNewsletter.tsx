@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUpRight, Check, Clipboard, Mail, Settings2 } from 'lucide-react';
+import { ArrowUpRight, Check, Clipboard, Mail } from 'lucide-react';
 import type { ProofOfWorkProfile } from '@/types/optimus';
 import type { AppView } from '@/components/Sidebar';
 import ViewHeader from '@/components/ViewHeader';
@@ -8,14 +8,9 @@ import { soundEngine } from '@/utils/soundEngine';
 interface DispatchNewsletterProps {
   profile: ProofOfWorkProfile;
   onNavigate: (view: AppView) => void;
-  onOpenSettings: () => void;
 }
 
-export default function DispatchNewsletter({
-  profile,
-  onNavigate,
-  onOpenSettings,
-}: DispatchNewsletterProps) {
+export default function DispatchNewsletter({ profile, onNavigate }: DispatchNewsletterProps) {
   const [copied, setCopied] = useState(false);
   const edition = profile.newsletter;
 
@@ -27,7 +22,7 @@ export default function DispatchNewsletter({
       edition.lede,
       '',
       ...edition.sections.flatMap((section) => [section.title, section.body, '']),
-      `Proof-of-work index: @${profile.user.login}`,
+      `Proof of work: @${profile.user.login}`,
       `Benchmark: ${profile.jev.classification}`,
     ].join('\n');
 
@@ -45,24 +40,18 @@ export default function DispatchNewsletter({
     <div className="mx-auto max-w-[1440px] p-4 sm:p-5">
       <ViewHeader
         index="06"
-        title="Dispatch / Newsletter"
-        description="A weekly editorial dispatch generated from the current proof-of-work index, open opportunities, and the signals shaping your stack."
+        title="Your Weekly Dispatch"
+        description="A weekly editorial brief generated from your proof of work, open opportunities, and the signals shaping your stack."
         actions={
-          <>
-            <button onClick={copyDispatch} className="btn-ghost !px-3 !py-2 !text-[10px]">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
-              {copied ? 'Copied' : 'Copy Dispatch'}
-            </button>
-            <button onClick={onOpenSettings} className="btn-primary !px-3 !py-2 !text-[10px]">
-              <Settings2 className="h-3.5 w-3.5" />
-              Dispatch Config
-            </button>
-          </>
+          <button onClick={copyDispatch} className="btn-ghost !px-3 !py-2 !text-[10px]">
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
+            {copied ? 'Copied' : 'Copy Dispatch'}
+          </button>
         }
         metrics={[
           { label: 'Edition', value: edition.edition },
           { label: 'Sections', value: `${edition.sections.length}` },
-          { label: 'Delivery', value: 'Browser preview' },
+          { label: 'Cadence', value: 'Weekly' },
           { label: 'Reader', value: `@${profile.user.login}` },
         ]}
       />
@@ -99,7 +88,7 @@ export default function DispatchNewsletter({
                   {profile.user.name ?? profile.user.login}
                 </p>
                 <p className="font-mono text-[8px] uppercase tracking-[0.06em] text-muted">
-                  Proof-of-work index · {profile.jev.classification}
+                  Proof of work · {profile.jev.classification}
                 </p>
               </div>
               <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[8px] font-bold tracking-[0.06em] text-primary">
@@ -147,7 +136,7 @@ export default function DispatchNewsletter({
               {[
                 ['Research note', profile.briefing[0] ?? 'Proof-of-work calibration summary'],
                 ['Opportunity brief', profile.jobs[0]?.role ?? 'Open role research'],
-                ['Scout signal', profile.scout.news[0]?.headline ?? 'Technical news index'],
+                ['Scout signal', profile.scout.news[0]?.headline ?? 'Dev Pulse signal'],
               ].map(([label, value], index) => (
                 <div key={label} className="flex items-start gap-2.5">
                   <span className="mt-0.5 font-mono text-[9px] font-bold text-primary">
@@ -186,21 +175,11 @@ export default function DispatchNewsletter({
                 onClick={() => onNavigate('news')}
                 className="inline-flex items-center gap-1 font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-primary hover:text-primary-bright"
               >
-                Open developer news <ArrowUpRight className="h-3 w-3" />
+                Open Dev Pulse <ArrowUpRight className="h-3 w-3" />
               </button>
             </div>
           </section>
 
-          <section className="rounded border-1.5 border-ink bg-subtle p-4 shadow-hard">
-            <p className="label-caps text-primary">Dispatch preferences</p>
-            <p className="mt-2 text-[11px] leading-relaxed text-muted">
-              Delivery currently runs as an in-app browser preview. Provider and newsletter controls
-              live in Engine Config.
-            </p>
-            <button onClick={onOpenSettings} className="btn-ghost mt-3 w-full !py-2 !text-[9px]">
-              Manage preferences
-            </button>
-          </section>
         </aside>
       </div>
     </div>

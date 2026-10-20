@@ -42,8 +42,8 @@ export default function EligibilityOpportunity({
     <div className="mx-auto max-w-[1440px] p-4 sm:p-5">
       <ViewHeader
         index="03"
-        title="Eligibility & Opportunity"
-        description="Calibrated eligibility for every lead, plus a counterfactual portfolio simulator. Paste any role, grant, hackathon, or portfolio URL for a live Firecrawl and Jev autopsy."
+        title="Job & Role Matcher"
+        description="Calibrated fit for every lead, plus a counterfactual portfolio simulator. Paste any role, grant, hackathon, or portfolio URL for a live evidence check."
         metrics={[
           { label: 'Baseline P(Accept)', value: `${profile.jev.pOffer}%` },
           { label: 'Boosted P(Accept)', value: `${boostedPOffer}%` },
@@ -105,11 +105,11 @@ export default function EligibilityOpportunity({
           <section className="rounded border-1.5 border-ink bg-subtle p-4 shadow-hard">
             <div className="flex items-center gap-2">
               <Layers3 className="h-4 w-4 text-accent-cyan" />
-              <p className="label-caps text-accent-cyan">Source contract</p>
+              <p className="label-caps text-accent-cyan">Evidence contract</p>
             </div>
             <p className="mt-2 text-[11px] leading-relaxed text-muted">
-              Firecrawl retrieves page evidence; Jev calibrates the six-axis decision. Cached judge
-              data remains available with no keys, so every control stays inspectable.
+              Firecrawl retrieves page evidence; Jev calibrates the six-axis decision. Cached
+              evidence remains available with no keys, so every control stays inspectable.
             </p>
             <div className="mt-3 flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.06em] text-muted">
               <FileSearch className="h-3 w-3" />

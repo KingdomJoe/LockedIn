@@ -52,7 +52,7 @@ IDLE → INGESTING → SIGNAL_MERGE → JEV_PASS → STRATEGIST_PASS → DEPLOYE
 
 ## Reliability Rules
 
-1. The judge path must never depend on a key, a proxy, or a cold start.
+1. The local path must never depend on a key, a proxy, or a cold start.
 2. Every optional integration has a deterministic fallback with visible
    provenance.
 3. Live failures are non-fatal: surface a compact notice on the affected card.
@@ -63,5 +63,5 @@ IDLE → INGESTING → SIGNAL_MERGE → JEV_PASS → STRATEGIST_PASS → DEPLOYE
 
 The orchestrator emits a sound cue and a visible telemetry toast for engagement,
 discovery, completion, warning, and boost. The drawer exposes the exact Jev
-request and response JSON so judges can audit the contract without reading the
-source.
+request and response JSON so reviewers can audit the contract without reading
+the source.

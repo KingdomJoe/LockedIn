@@ -8,12 +8,11 @@ import {
   CheckCircle2,
   Clipboard,
   Copy,
-  Cpu,
-  Database,
   ExternalLink,
   FileCode2,
   FileText,
   Github,
+  Globe,
   HelpCircle,
   Keyboard,
   Link as LinkIcon,
@@ -31,12 +30,10 @@ import {
   VolumeX,
   Zap,
 } from 'lucide-react';
-import type { EngineConfig, EngineMode } from '@/types/engine';
 import type { ProofOfWorkProfile } from '@/types/optimus';
 import type { ProfileInputs } from '@/services/optimusEngine';
 import type { AccentColor, AppearanceSettings, ThemeDensity } from '@/types/appearance';
 import { ACCENTS, DENSITIES } from '@/services/appearance';
-import { LLM_PROVIDERS } from '@/services/engineConfig';
 import { soundEngine } from '@/utils/soundEngine';
 import ViewHeader from '@/components/ViewHeader';
 import AGENTS_MD from '@/agents/AGENTS.md?raw';
@@ -54,8 +51,6 @@ type SettingsTab = (typeof TABS)[number]['id'];
 interface SettingsPageProps {
   profile: ProofOfWorkProfile;
   inputs: ProfileInputs;
-  config: EngineConfig;
-  engineMode: EngineMode;
   appearance: AppearanceSettings;
   muted: boolean;
   onSaveProfile: (inputs: ProfileInputs) => Promise<{ ok: boolean; message?: string }>;
@@ -169,7 +164,7 @@ function ProfilePanel({
 
   const save = async () => {
     if (!normalized.username) {
-      setNotice({ tone: 'error', message: 'A GitHub handle is required to rebuild the index.' });
+      setNotice({ tone: 'error', message: 'A GitHub handle is required to rebuild the profile.' });
       return;
     }
     setSaving(true);
@@ -181,7 +176,7 @@ function ProfilePanel({
       message:
         result.message ??
         (result.ok
-          ? 'Profile links synced. Palantir and default Opti-Bots are being re-keyed.'
+          ? 'Profile links synced. Palantir and default OptiBots are being re-keyed.'
           : 'Profile sync failed.'),
     });
     if (result.ok) soundEngine.playJevMatrixLock();
@@ -214,7 +209,7 @@ function ProfilePanel({
               value={draft.username}
               onChange={(username) => setDraft((current) => ({ ...current, username }))}
               placeholder="torvalds"
-              hint={rebuilding ? 'Saving rebuilds the full index from GitHub.' : 'Primary identity source.'}
+              hint={rebuilding ? 'Saving rebuilds the full profile from GitHub.' : 'Primary identity source.'}
               required
             />
             <ProfileField
@@ -223,7 +218,7 @@ function ProfilePanel({
               value={draft.xHandle ?? ''}
               onChange={(xHandle) => setDraft((current) => ({ ...current, xHandle }))}
               placeholder="@yourhandle"
-              hint="Feeds the X/Twitter Opti-Bot signal stream."
+              hint="Feeds the X/Twitter OptiBot signal stream."
             />
             <ProfileField
               icon={<Linkedin className="h-3 w-3" />}
@@ -272,7 +267,7 @@ function ProfilePanel({
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-subtle pt-4">
             <p className="max-w-[48ch] text-[10px] leading-relaxed text-muted">
               Saving re-merges link signals, updates the Overview Palantir identity, and re-provisions
-              the default Opti-Bots from the connected sources.
+              the default OptiBots from the connected sources.
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -332,7 +327,7 @@ function ProfilePanel({
           </div>
           <div className="border-t border-subtle px-4 py-3">
             <p className="font-mono text-[8px] uppercase tracking-[0.06em] text-muted">
-              Last index rebuild · {new Date(profile.generatedAt).toLocaleString()}
+              Last profile rebuild · {new Date(profile.generatedAt).toLocaleString()}
             </p>
           </div>
         </section>
@@ -397,20 +392,11 @@ function parseAgentDoc(raw: string) {
   ];
 }
 
-function AboutPanel({
-  profile,
-  config,
-  engineMode,
-}: {
-  profile: ProofOfWorkProfile;
-  config: EngineConfig;
-  engineMode: EngineMode;
-}) {
+function AboutPanel({ profile }: { profile: ProofOfWorkProfile }) {
   const sections = useMemo(() => parseAgentDoc(AGENTS_MD), []);
   const [selectedId, setSelectedId] = useState(sections[0]?.id ?? 'overview');
   const [copied, setCopied] = useState(false);
   const selected = sections.find((section) => section.id === selectedId) ?? sections[0];
-  const provider = LLM_PROVIDERS[config.llmProvider];
 
   const copySection = async () => {
     if (!selected) return;
@@ -435,18 +421,18 @@ function AboutPanel({
       icon: Zap,
       label: 'System-1 · Jev',
       badge: `${profile.jev.latencyMs}ms`,
-      body: '24 parallel RLCD heads calibrate eligibility across six competency axes, P(Shortlist), and P(Offer).',
+      body: '24 parallel calibration heads score eligibility across six competency axes, P(Shortlist), and P(Offer).',
     },
     {
-      icon: Cpu,
-      label: 'System-2 · LLM',
-      badge: provider.short,
+      icon: Bot,
+      label: 'System-2 · Synthesis',
+      badge: 'READY',
       body: 'Streaming synthesis turns calibrated evidence into dossiers, outreach drafts, and application strategy.',
     },
     {
-      icon: Database,
+      icon: Globe,
       label: 'Firecrawl',
-      badge: engineMode === 'live' ? 'LIVE' : 'CACHED',
+      badge: profile.scout.urlsInspected > 0 ? 'READY' : 'LOCAL',
       body: 'Page evidence, role leads, hackathons, and dispatch signals enter through a provenance-first scrape layer.',
     },
   ];
@@ -464,13 +450,13 @@ function AboutPanel({
             <p className="mt-4 max-w-[52ch] text-[12px] leading-[1.7] text-muted">
               LockedIn is a technical evidence engine for engineers who ship. It merges public
               repositories, source signals, calibrated decisions, and autonomous research agents into one
-              inspectable index. No resume theatre. No black-box score without a contract.
+              inspectable record. No resume theatre. No black-box score without a contract.
             </p>
             <div className="mt-5 grid grid-cols-3 gap-2">
               {[
                 ['Merged signals', `${profile.signals.length}`],
-                ['RLCD heads', '24'],
-                ['Schema error', `${profile.jev.schemaErrorRate}%`],
+                ['Fresh repos', `${profile.freshRepos}`],
+                ['Role matches', `${profile.jobs.length}`],
               ].map(([label, value]) => (
                 <div key={label} className="rounded border border-subtle bg-well px-3 py-2">
                   <p className="label-caps">{label}</p>
@@ -596,16 +582,16 @@ const CALIBRATION_GUIDES = [
   },
   {
     id: 'heads',
-    title: 'Parallel RLCD heads',
-    summary: 'Why 24 heads beat one black-box score.',
+    title: 'Independent calibration',
+    summary: 'Why a panel beats one black-box score.',
     body: 'Each head observes the same evidence from a different axis and records its own confidence. Disagreement is surfaced as schema variance, not hidden behind a single number.',
   },
 ] as const;
 
 const SHORTCUTS = [
   ['Ctrl / ⌘ K', 'Focus the GitHub profile search'],
-  ['Alt + 1 … 6', 'Jump across Overview, Opti-Bots, Eligibility, Scout, News, and Dispatch'],
-  ['Esc', 'Dismiss the Engine Drawer, Opti-Bot builder, or mobile navigation'],
+  ['Alt + 1 … 6', 'Jump across Command Center views'],
+  ['Esc', 'Dismiss the Engine Drawer, OptiBot builder, or mobile navigation'],
   ['Enter', 'Submit the active form'],
   ['Tab', 'Move through interactive controls'],
 ];
@@ -646,7 +632,7 @@ function HelpPanel({ profile }: { profile: ProofOfWorkProfile }) {
           <div className="flex items-center justify-between border-b border-subtle px-4 py-3">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-primary" />
-              <h2 className="mono-label text-content">Jev RLCD calibration guide</h2>
+              <h2 className="mono-label text-content">Eligibility calibration guide</h2>
             </div>
             <span className="font-mono text-[8px] uppercase tracking-[0.06em] text-accent-cyan">
               {profile.jev.calibration}% conf
@@ -732,8 +718,8 @@ function HelpPanel({ profile }: { profile: ProofOfWorkProfile }) {
             </span>
             <h3 className="mt-4 font-display text-[18px] font-bold text-content">Feedback queued.</h3>
             <p className="mt-2 max-w-[34ch] text-[11px] leading-relaxed text-muted">
-              Your note is stored in this browser for the next judge-mode review. No backend
-              transmission is attempted without a configured review endpoint.
+              Your note is stored in this browser for the next review. No backend transmission is
+              attempted without a configured review endpoint.
             </p>
             <button
               onClick={() => setSent(false)}
@@ -793,13 +779,13 @@ const PLANS = [
     name: 'Free Explorer',
     price: '$0',
     cadence: 'forever',
-    description: 'The complete proof-of-work index for one linked profile.',
+    description: 'The complete proof of work for one linked profile.',
     features: [
-      '1 GitHub-linked research index',
-      '3 auto-spawned profile Opti-Bots',
-      'Jev RLCD eligibility calibration',
+      '1 GitHub-linked profile',
+      '3 auto-spawned profile OptiBots',
+      'Eligibility calibration',
       'Cached Firecrawl scouting',
-      '1 custom Opti-Bot',
+      '1 custom OptiBot',
     ],
     cta: 'Current plan',
     featured: false,
@@ -811,7 +797,7 @@ const PLANS = [
     cadence: '/mo',
     description: 'For engineers treating their portfolio like an operating system.',
     features: [
-      'Unlimited Opti-Bots',
+      'Unlimited OptiBots',
       'Auto-Apply and application drafting',
       'Live Firecrawl and X signal streams',
       'Unlimited custom bot objectives',
@@ -853,8 +839,8 @@ function BillingPanel() {
               Free to prove. Pro to automate. API to scale.
             </h2>
             <p className="mt-2 max-w-[60ch] text-[11px] leading-relaxed text-muted">
-              The index stays inspectable in judge mode. Paid tiers monetize autonomous execution,
-              live source coverage, and recruiter-grade verification rather than hiding the core model.
+              The profile stays inspectable. Paid tiers monetize autonomous execution, live source
+              coverage, and recruiter-grade verification rather than hiding the core model.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -938,7 +924,7 @@ function BillingPanel() {
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
             <p className="font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-content">
-              Judge-mode billing preview
+              Billing preview
             </p>
           </div>
           <p className="max-w-[64ch] text-[10px] leading-relaxed text-muted">
@@ -1127,7 +1113,7 @@ function AppearancePanel({
                   <Bot className="h-3 w-3 text-primary" />
                 </span>
                 <span className="font-display text-[11px] font-semibold text-content">
-                  Opti-Bot output
+                  OptiBot output
                 </span>
               </div>
               <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 font-mono text-[7px] font-bold text-primary">
@@ -1139,7 +1125,9 @@ function AppearancePanel({
                 ['High-impact issue matched', '+12% depth'],
                 ['Founder hiring signal', '94% match'],
                 ['Calibration locked', `${profile.jev.calibration}%`],
-              ].map(([label, value]) => (
+              ]
+                .slice(0, appearance.density === 'comfortable' ? 2 : 3)
+                .map(([label, value]) => (
                 <div
                   key={label}
                   className={`flex items-center justify-between gap-2 rounded border border-subtle bg-well ${
@@ -1157,7 +1145,7 @@ function AppearancePanel({
             </div>
           </div>
           <p className="mt-3 font-mono text-[8px] leading-relaxed text-muted">
-            Density and accent persist to localStorage and apply across the research index. Sound
+            Density and accent persist to localStorage and apply across the workspace. Sound
             preference syncs with the header audio control.
           </p>
         </div>
@@ -1169,8 +1157,6 @@ function AppearancePanel({
 export default function SettingsPage({
   profile,
   inputs,
-  config,
-  engineMode,
   appearance,
   muted,
   onSaveProfile,
@@ -1179,7 +1165,6 @@ export default function SettingsPage({
   onOpenEngine,
 }: SettingsPageProps) {
   const [tab, setTab] = useState<SettingsTab>('profile');
-  const provider = LLM_PROVIDERS[config.llmProvider];
   const accent = ACCENTS[appearance.accent];
 
   return (
@@ -1187,7 +1172,7 @@ export default function SettingsPage({
       <ViewHeader
         index="07"
         title="Settings"
-        description="Profile linkage, engine architecture, calibration help, commercial tiers, and the workspace controls that shape every research loop."
+        description="Profile linkage, calibration help, commercial tiers, and the workspace controls that shape every research loop."
         actions={
           <>
             <button onClick={() => onOpenEngine('agents')} className="btn-ghost !px-3 !py-2 !text-[10px]">
@@ -1201,8 +1186,8 @@ export default function SettingsPage({
           </>
         }
         metrics={[
-          { label: 'Engine mode', value: engineMode === 'live' ? 'Live keys' : 'Judge mode' },
-          { label: 'Provider', value: provider.short },
+          { label: 'Profile', value: `@${profile.user.login}` },
+          { label: 'Sources', value: `${profile.signals.length}` },
           { label: 'Plan', value: 'Free Explorer' },
           { label: 'Theme', value: accent.label },
         ]}
@@ -1249,7 +1234,7 @@ export default function SettingsPage({
         {tab === 'profile' && (
           <ProfilePanel profile={profile} inputs={inputs} onSaveProfile={onSaveProfile} />
         )}
-        {tab === 'about' && <AboutPanel profile={profile} config={config} engineMode={engineMode} />}
+        {tab === 'about' && <AboutPanel profile={profile} />}
         {tab === 'help' && <HelpPanel profile={profile} />}
         {tab === 'billing' && <BillingPanel />}
         {tab === 'appearance' && (

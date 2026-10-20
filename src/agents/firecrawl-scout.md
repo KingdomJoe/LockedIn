@@ -47,7 +47,7 @@ fallback. Never present cached content as live.
 
 The zero-key path uses the same contract and the same analyzer. It composes a
 deterministic role or hackathon brief from the URL, seeded by a stable FNV-1a
-hash. This keeps every judge’s first click reliable and reproducible.
+hash. This keeps every first click reliable and reproducible.
 
 ## Guardrails
 

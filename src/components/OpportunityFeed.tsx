@@ -140,7 +140,7 @@ export default function OpportunityFeed({
                 : 'border-accent-amber/40 bg-accent-amber/10 text-accent-amber'
             }`}
           >
-            {firecrawlLive ? 'Live key active' : 'Cached · judge mode'}
+            {firecrawlLive ? 'Live key active' : 'Cached evidence'}
           </span>
         </div>
         <div className="p-3.5">
@@ -309,7 +309,7 @@ export default function OpportunityFeed({
         <div className="panel-header">
           <div className="flex items-center gap-2">
             <Briefcase className="h-4 w-4 text-primary" />
-            <h2 className="mono-label text-content">Eligibility & opportunity list</h2>
+            <h2 className="mono-label text-content">Role & opportunity matches</h2>
           </div>
           <span className="font-mono text-[8px] text-muted">
             BASELINE {profile.jev.pOffer}% → BOOSTED {boostedPOffer}%

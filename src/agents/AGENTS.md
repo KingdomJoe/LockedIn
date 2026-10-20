@@ -16,11 +16,11 @@ portfolio forge.
 
 ## 2. The Hybrid Stack
 
-### System 1 — TypeSafe AI `Jev` Model
+### System 1 — `Jev` Calibration Model
 
 - Parallel calibrated **classification + regression** over 24 probability heads.
-- Trained with **RLCD** (Reinforcement Learning from Contrastive Distillation)
-  so outputs ship with **calibrated confidence intervals**, not vibes.
+- Trained for contrastive calibration so outputs ship with **calibrated
+  confidence intervals**, not vibes.
 - Contracts: every pass returns `p`, `confidence`, `schemaErrorRate`.
 - Target wall-clock: **~140ms** (observed range 118–165ms in production).
 - Runs all 6 competency axes **concurrently**, never sequentially.
@@ -41,15 +41,14 @@ portfolio forge.
   `https://api.firecrawl.dev/v1/scrape`; without a key it uses the cached
   deterministic dataset and labels the card accordingly.
 
-### Dual-Mode Engine
+### Runtime Modes
 
-- **Zero-Config Judge Mode** — no keys required. Live GitHub REST telemetry +
-  deterministic RLCD calibration + cached Firecrawl dataset. This is the
-  guaranteed first-click path for every judge.
-- **Live API Key Mode** — optional keys for Firecrawl scraping, a System-2
-  streaming provider (Z.ai `glm-5.3-flash`, OpenRouter, Gemini, OpenAI), and a
-  TypeSafe AI `Jev` System-1 endpoint. Keys live in the browser session only.
-- The Engine Config drawer exposes the exact Jev request/response JSON and
+- **Local Mode** — no keys required. Live GitHub REST telemetry + deterministic
+  calibration + cached Firecrawl dataset. This is the default path with no setup.
+- **Live Mode** — optional keys for Firecrawl scraping, a System-2 synthesis
+  backend, and a System-1 calibration endpoint. Keys live in the browser session
+  only.
+- The Engine Config drawer exposes the exact calibration request/response JSON and
   streams System-2 synthesis so the contract is auditable, not implied.
 
 ## 3. The Four Loops

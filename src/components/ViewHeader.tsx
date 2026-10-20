@@ -19,7 +19,7 @@ export default function ViewHeader({
     <header className="border-b border-subtle pb-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="label-caps text-primary">{index} // Research Index</p>
+          <p className="label-caps text-primary">{index} // Command Center</p>
           <h1 className="mt-2 font-display text-[30px] font-bold leading-none tracking-[-0.03em] text-content sm:text-[36px]">
             {title}
           </h1>
@@ -29,7 +29,7 @@ export default function ViewHeader({
       </div>
 
       {metrics.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="density-detail mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {metrics.map((metric) => (
             <div
               key={metric.label}

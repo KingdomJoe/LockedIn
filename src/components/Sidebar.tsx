@@ -31,12 +31,12 @@ const NAV_ITEMS: {
   icon: typeof LayoutGrid;
   badge?: string;
 }[] = [
-  { id: 'overview', label: 'Overview', icon: LayoutGrid },
-  { id: 'bots', label: 'Opti-Bots', icon: Bot, badge: '3 ACTIVE' },
-  { id: 'eligibility', label: 'Eligibility & Opportunity', icon: BadgeCheck },
-  { id: 'scout', label: 'Scout Reports', icon: Radar },
-  { id: 'news', label: 'Developer News', icon: Newspaper },
-  { id: 'dispatch', label: 'Dispatch / Newsletter', icon: Mail },
+  { id: 'overview', label: 'Palantir Overview', icon: LayoutGrid },
+  { id: 'bots', label: 'Autonomous OptiBots', icon: Bot, badge: '3 LIVE' },
+  { id: 'eligibility', label: 'Job & Role Matcher', icon: BadgeCheck },
+  { id: 'scout', label: 'Live Firecrawl Scouts', icon: Radar },
+  { id: 'news', label: 'Dev Pulse', icon: Newspaper },
+  { id: 'dispatch', label: 'Your Weekly Dispatch', icon: Mail },
 ];
 
 export default function Sidebar({
@@ -89,7 +89,7 @@ export default function Sidebar({
                   LockedIn
                 </span>
                 <span className="mt-1 block font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-muted">
-                  Technical Index
+                  Command Center
                 </span>
               </span>
             )}
@@ -117,7 +117,7 @@ export default function Sidebar({
         </div>
 
         <nav className="flex-1 overflow-y-auto p-2" aria-label="Primary navigation">
-          {!collapsed && <p className="label-caps mb-2 px-2 pt-1">Research Index</p>}
+          {!collapsed && <p className="label-caps mb-2 px-2 pt-1">Command Center</p>}
           <div className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const active = view === item.id;

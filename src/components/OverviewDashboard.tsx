@@ -5,16 +5,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from 'react';
-import {
-  ArrowRight,
-  ArrowUpRight,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  FileText,
-  Radar,
-  RefreshCw,
-} from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ExternalLink, FileText, Radar, RefreshCw } from 'lucide-react';
 import type { ProofOfWorkProfile } from '@/types/optimus';
 import type { AppView } from '@/components/Sidebar';
 import PalantirOrb from '@/components/PalantirOrb';
@@ -114,11 +105,14 @@ export default function OverviewDashboard({
     setActiveSims(['oss']);
   }, [profile.generatedAt]);
 
-  const stayWithinStories = (next: number) => {
-    if (!stories.length) return;
-    setNewsIndex(((next % stories.length) + stories.length) % stories.length);
-    soundEngine.playKeyClick();
-  };
+  useEffect(() => {
+    if (stories.length < 2) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => {
+      setNewsIndex((current) => (current + 1) % stories.length);
+    }, 5200);
+    return () => window.clearInterval(timer);
+  }, [stories.length]);
 
   const simDelta = activeSims.reduce(
     (sum, id) => sum + (SIMULATIONS.find((item) => item.id === id)?.delta ?? 0),
@@ -149,7 +143,6 @@ export default function OverviewDashboard({
   }, [profile.scout.hackathons, profile.jobs, boost]);
 
   const topJobs = profile.jobs.slice(0, 4);
-  const nextStories = stories.filter((_, index) => index !== newsIndex).slice(0, 3);
 
   const runQuickScrape = () => {
     if (scouting) return;
@@ -182,13 +175,13 @@ export default function OverviewDashboard({
 
         <section
           className={`${CARD_BASE} cursor-pointer transition-colors hover:border-[#3B4250] xl:pr-36`}
-          {...cardNavigation('news', 'Open Developer News')}
+          {...cardNavigation('news', 'Open Dev Pulse')}
         >
           <header className="flex items-center justify-between gap-3 border-b border-subtle px-4 py-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="font-mono text-[10px] font-bold text-primary">01 //</span>
               <h2 className="truncate font-display text-[12px] font-bold uppercase tracking-[0.02em] text-content min-[1400px]:text-[13px]">
-                Dev News Carousel
+                Dev Pulse
               </h2>
             </div>
             <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
@@ -196,7 +189,10 @@ export default function OverviewDashboard({
             </span>
           </header>
 
-          <div className="flex min-h-0 flex-1 flex-col p-4">
+          <div
+            key={story?.id ?? 'empty'}
+            className="flex min-h-0 flex-1 animate-news-in flex-col p-4"
+          >
             {story ? (
               <>
                 <div className="flex flex-wrap items-center gap-2">
@@ -221,82 +217,48 @@ export default function OverviewDashboard({
                   Curated for @{profile.user.login} · {profile.languages[0]?.name ?? 'polyglot'} stack
                 </p>
 
-                <div className="mt-3 space-y-1.5 border-t border-subtle pt-2.5">
-                  {nextStories.map((next, index) => (
-                    <button
-                      key={next.id}
-                      onClick={() =>
-                        stayWithinStories(stories.findIndex((item) => item.id === next.id))
-                      }
-                      className={`${
-                        index === 2 ? 'hidden min-[1400px]:flex' : 'flex'
-                      } w-full items-start gap-2 py-0.5 text-left group`}
-                    >
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-ink group-hover:bg-primary" />
-                      <span className="min-w-0">
-                        <span className="block truncate font-mono text-[9px] text-muted group-hover:text-content">
-                          {next.headline}
-                        </span>
-                        <span className="mt-0.5 block font-mono text-[7px] uppercase tracking-[0.08em] text-muted/70">
-                          {newsCategory(next.signal)} · {next.source}
-                        </span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="mt-auto flex items-center justify-between gap-3 pt-3">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => stayWithinStories(newsIndex - 1)}
-                      className="grid h-8 w-8 place-items-center rounded border-1.5 border-ink bg-well text-content shadow-hard transition-colors hover:bg-subtle hover:text-primary"
-                      aria-label="Previous news story"
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => stayWithinStories(newsIndex + 1)}
-                      className="grid h-8 w-8 place-items-center rounded border-1.5 border-ink bg-well text-content shadow-hard transition-colors hover:bg-subtle hover:text-primary"
-                      aria-label="Next news story"
-                    >
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </button>
-                    <div className="ml-2 flex gap-1.5">
+                <div className="mt-auto space-y-3 pt-4">
+                  <div className="h-1 overflow-hidden rounded-full bg-ink">
+                    <div
+                      key={story.id}
+                      className="h-full w-full origin-left animate-news-progress bg-primary"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex gap-1.5">
                       {stories.map((item, index) => (
-                        <button
+                        <span
                           key={item.id}
-                          onClick={() => stayWithinStories(index)}
                           className={`h-1.5 rounded-full transition-all ${
                             index === newsIndex ? 'w-5 bg-primary' : 'w-1.5 bg-ink'
                           }`}
-                          aria-label={`Show story ${index + 1}`}
                         />
                       ))}
                     </div>
+                    <button
+                      onClick={() => onNavigate('news')}
+                      className="inline-flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.06em] text-primary transition-colors hover:text-primary-bright"
+                    >
+                      Open Dev Pulse <ArrowUpRight className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onNavigate('news')}
-                    className="inline-flex shrink-0 items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.06em] text-primary transition-colors hover:text-primary-bright"
-                  >
-                    Open Newsroom <ArrowUpRight className="h-3.5 w-3.5" />
-                  </button>
                 </div>
               </>
             ) : (
-              <p className="font-mono text-[11px] text-muted">No developer stories indexed yet.</p>
+              <p className="font-mono text-[11px] text-muted">No Dev Pulse stories yet.</p>
             )}
           </div>
         </section>
 
         <section
           className={`${CARD_BASE} cursor-pointer transition-colors hover:border-[#3B4250] xl:pl-36`}
-          {...cardNavigation('eligibility', 'Open Jev simulator in Eligibility')}
+          {...cardNavigation('eligibility', 'Open Jev Calibration Simulator')}
         >
           <header className="flex items-center justify-between gap-3 border-b border-subtle px-4 py-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="font-mono text-[10px] font-bold text-primary">02 //</span>
               <h2 className="truncate font-display text-[12px] font-bold uppercase tracking-[0.02em] text-content min-[1400px]:text-[13px]">
-                Jev Simulator (System-1 RLCD)
+                Jev Calibration Simulator
               </h2>
             </div>
             <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.08em] text-accent-cyan">
@@ -313,9 +275,8 @@ export default function OverviewDashboard({
               latencyMs={134}
             />
 
-            <p className="mt-auto max-w-[58ch] pb-2 pt-2 text-[9px] leading-[1.45] text-muted">
-              Counterfactuals rerun across 24 RLCD heads. Calibration band is ±{simulatedBand} pts at{' '}
-              {profile.jev.calibration}% confidence.
+            <p className="density-detail mt-auto max-w-[58ch] pb-2 pt-2 text-[9px] leading-[1.45] text-muted">
+              Projected band is ±{simulatedBand} pts at {profile.jev.calibration}% confidence.
             </p>
 
             <div className="flex flex-wrap gap-1.5">
@@ -343,22 +304,19 @@ export default function OverviewDashboard({
                   </button>
                 );
               })}
-              <span className="ml-auto self-center font-mono text-[7px] uppercase tracking-[0.06em] text-muted">
-                RLCD · 24 heads
-              </span>
             </div>
           </div>
         </section>
 
         <section
           className={`${CARD_BASE} cursor-pointer transition-colors hover:border-[#3B4250] xl:pr-36`}
-          {...cardNavigation('scout', 'Open Scout Reports')}
+          {...cardNavigation('scout', 'Open Live Firecrawl Scouts')}
         >
           <header className="flex items-center justify-between gap-3 border-b border-subtle px-4 py-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="font-mono text-[10px] font-bold text-primary">03 //</span>
               <h2 className="truncate font-display text-[12px] font-bold uppercase tracking-[0.02em] text-content min-[1400px]:text-[13px]">
-                Scout Report (Firecrawl + LLM)
+                Live Firecrawl Scouts
               </h2>
             </div>
             <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.08em] text-accent-amber">
@@ -418,13 +376,13 @@ export default function OverviewDashboard({
 
         <section
           className={`${CARD_BASE} cursor-pointer transition-colors hover:border-[#3B4250] xl:pl-36`}
-          {...cardNavigation('eligibility', 'Open Eligibility and Opportunity')}
+          {...cardNavigation('eligibility', 'Open Job & Role Matcher')}
         >
           <header className="flex items-center justify-between gap-3 border-b border-subtle px-4 py-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="font-mono text-[10px] font-bold text-primary">04 //</span>
               <h2 className="truncate font-display text-[12px] font-bold uppercase tracking-[0.02em] text-content min-[1400px]:text-[13px]">
-                Eligibility &amp; Opportunity Creation
+                Job &amp; Role Matcher
               </h2>
             </div>
             <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.08em] text-primary">
@@ -468,14 +426,14 @@ export default function OverviewDashboard({
             </div>
 
             <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
-              <p className="font-mono text-[8px] uppercase tracking-[0.08em] text-muted">
+              <p className="density-detail font-mono text-[8px] uppercase tracking-[0.08em] text-muted">
                 {profile.jobs.length} calibrated roles · {profile.gaps[0]} focus
               </p>
               <button
                 onClick={() => onNavigate('eligibility')}
                 className="inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.06em] text-primary transition-colors hover:text-primary-bright"
               >
-                View All Opportunities <ArrowRight className="h-3.5 w-3.5" />
+                Open Job &amp; Role Matcher <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
@@ -490,6 +448,7 @@ export default function OverviewDashboard({
                 username={profile.user.login}
                 repos={profile.repos}
                 languages={profile.languages}
+                signals={profile.signals}
                 boostedPOffer={boostedPOffer}
                 auraLevel={auraLevel}
                 strengths={profile.strengths}
@@ -506,7 +465,7 @@ export default function OverviewDashboard({
           <div className="mb-3 flex items-center justify-between border-b border-subtle pb-3">
             <p className="label-caps flex items-center gap-2">
               <Radar className="h-3.5 w-3.5 text-primary" />
-              Orbital overview
+              Palantir overview
             </p>
             <a
               href={profile.user.html_url}
@@ -526,6 +485,7 @@ export default function OverviewDashboard({
                   username={profile.user.login}
                   repos={profile.repos}
                   languages={profile.languages}
+                  signals={profile.signals}
                   boostedPOffer={boostedPOffer}
                   auraLevel={auraLevel}
                   strengths={profile.strengths}
