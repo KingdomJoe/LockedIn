@@ -2,7 +2,6 @@ import {
   BadgeCheck,
   Bot,
   LayoutGrid,
-  LockKeyhole,
   Mail,
   Newspaper,
   Radar,
@@ -11,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { ProofOfWorkProfile } from '@/types/optimus';
 import { soundEngine } from '@/utils/soundEngine';
+import Logo from '@/components/Logo';
 
 export type AppView = 'overview' | 'bots' | 'eligibility' | 'scout' | 'news' | 'dispatch';
 
@@ -80,9 +80,7 @@ export default function Sidebar({
             className="flex min-w-0 items-center gap-2"
             aria-label="Go to overview"
           >
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded border-1.5 border-ink bg-primary text-primary-ink shadow-hard">
-              <LockKeyhole className="h-4 w-4" />
-            </span>
+            <Logo size={32} className="shrink-0 border-1.5 border-ink shadow-hard" />
             {!collapsed && (
               <span className="min-w-0 text-left">
                 <span className="block truncate font-display text-[17px] font-bold leading-none tracking-[-0.02em] text-content">
