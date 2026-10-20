@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#07090E"/>
+  <circle cx="256" cy="256" r="120" fill="#10B981"/>
+  <ellipse cx="256" cy="256" rx="180" ry="52" fill="none" stroke="#06B6D4" stroke-width="10" transform="rotate(-24 256 256)"/>
+  <circle cx="256" cy="256" r="42" fill="#07090E"/>
+  <text x="256" y="274" font-family="monospace" font-size="64" font-weight="bold" fill="#10B981" text-anchor="middle">Li</text>
+</svg>
