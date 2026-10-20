@@ -41,6 +41,7 @@ import DeveloperNews from '@/components/DeveloperNews';
 import DispatchNewsletter from '@/components/DispatchNewsletter';
 import SettingsPage from '@/components/SettingsPage';
 import EngineDrawer from '@/components/EngineDrawer';
+import LandingPage from '@/components/LandingPage';
 
 type Phase = 'onboarding' | 'incinerating' | 'deployed' | 'error';
 type SidebarView = AppView | 'settings';
@@ -384,6 +385,18 @@ export default function App() {
       return () => window.clearTimeout(timer);
     }
   }, [counterfactual.totalDelta]);
+
+  if (!profile) {
+    return (
+      <LandingPage
+        inputs={inputs}
+        phase={phase}
+        error={error}
+        onInputsChange={setInputs}
+        onDeploy={(nextInputs) => void deploy(nextInputs)}
+      />
+    );
+  }
 
   if (!profile) {
     return (
