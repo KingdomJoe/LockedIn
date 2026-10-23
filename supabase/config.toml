@@ -1,0 +1,7 @@
+project_id = "jqreivqtligphbgiovlq"
+
+[functions.firecrawl-scrape]
+verify_jwt = false
+
+[functions.llm-stream]
+verify_jwt = false

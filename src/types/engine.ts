@@ -1,19 +1,12 @@
 import type { CompetencyAxis } from '@/types/optimus';
 
-export type LlmProvider = 'zai' | 'openrouter' | 'gemini' | 'openai';
-
-export interface EngineConfig {
-  firecrawlKey: string;
-  llmProvider: LlmProvider;
-  llmKey: string;
-  llmModel: string;
-  jevEndpoint: string;
-  jevKey: string;
-}
-
 export type EngineMode = 'judge' | 'live';
 
 export type CustomTargetKind = 'role' | 'hackathon' | 'portfolio' | 'grant';
+
+export interface EngineConfig {
+  llmModel: string;
+}
 
 export interface CustomTargetAnalysis {
   id: string;

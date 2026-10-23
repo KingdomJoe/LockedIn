@@ -22,7 +22,7 @@ import {
   resyncProfileLinks,
   type ProfileInputs,
 } from '@/services/optimusEngine';
-import { loadEngineConfig, saveEngineConfig } from '@/services/engineConfig';
+import { loadEngineConfig, saveEngineConfig, getEngineMode } from '@/services/engineConfig';
 import { applyAppearance, loadAppearance, saveAppearance } from '@/services/appearance';
 import { analyzeTarget } from '@/services/customAnalysis';
 import {
@@ -102,6 +102,7 @@ export default function App() {
     open: false,
     tab: 'config',
   });
+  const engineMode = getEngineMode();
   const [customMatches, setCustomMatches] = useState<CustomTargetAnalysis[]>([]);
   const [analyzingUrl, setAnalyzingUrl] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
@@ -321,23 +322,15 @@ export default function App() {
 
       try {
         let bundle: ScrapeBundle;
-        if (engineConfig.firecrawlKey.trim()) {
-          try {
-            bundle = await scrapeWithFirecrawl(
-              normalized,
-              engineConfig.firecrawlKey,
-              controller.signal
-            );
-          } catch (cause) {
-            if (controller.signal.aborted) return;
-            const reason = cause instanceof Error ? cause.message : 'Live crawl failed';
-            bundle = {
-              ...buildCachedScrape(normalized),
-              notice: `${reason} — fell back to the cached dataset.`,
-            };
-          }
-        } else {
-          bundle = buildCachedScrape(normalized);
+        try {
+          bundle = await scrapeWithFirecrawl(normalized, controller.signal);
+        } catch (cause) {
+          if (controller.signal.aborted) return;
+          const reason = cause instanceof Error ? cause.message : 'Live crawl failed';
+          bundle = {
+            ...buildCachedScrape(normalized),
+            notice: `${reason} — fell back to the cached dataset.`,
+          };
         }
 
         if (controller.signal.aborted) return;
@@ -362,7 +355,7 @@ export default function App() {
         }, 1200);
       }
     },
-    [profile, engineConfig.firecrawlKey]
+    [profile]
   );
 
   const toggleForge = useCallback((id: string, next: boolean) => {
@@ -790,7 +783,7 @@ export default function App() {
               boostedPOffer={counterfactual.boostedPOffer}
               onRunScout={runScout}
               scouting={scouting}
-              firecrawlLive={Boolean(engineConfig.firecrawlKey.trim())}
+              firecrawlLive={engineMode === 'live'}
               customMatches={customMatches}
               analyzingUrl={analyzingUrl}
               urlError={urlError}
@@ -807,7 +800,7 @@ export default function App() {
             <ScoutReports
               profile={profile}
               scouting={scouting}
-              firecrawlLive={Boolean(engineConfig.firecrawlKey.trim())}
+              firecrawlLive={engineMode === 'live'}
               onRunScout={runScout}
               onNavigate={(next) => setView(next)}
             />

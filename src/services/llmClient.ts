@@ -1,11 +1,7 @@
-import type { CustomTargetAnalysis, LlmProvider } from '@/types/engine';
+import type { CustomTargetAnalysis } from '@/types/engine';
 import type { ProofOfWorkProfile } from '@/types/optimus';
-import { LLM_PROVIDERS } from '@/services/engineConfig';
 
 export interface StreamDossierOptions {
-  provider: LlmProvider;
-  apiKey: string;
-  model: string;
   profile: ProofOfWorkProfile;
   target?: CustomTargetAnalysis | null;
   onToken: (token: string) => void;
@@ -15,17 +11,6 @@ export interface StreamDossierOptions {
 interface OpenAiChunk {
   choices?: { delta?: { content?: string }; message?: { content?: string } }[];
 }
-
-interface GeminiChunk {
-  candidates?: { content?: { parts?: { text?: string }[] } }[];
-}
-
-const DOSSIER_SYSTEM_PROMPT =
-  'You are Forge Strategist, the System-2 agent inside LockedIn. You synthesize a precise ' +
-  'proof-of-work dossier for a specific builder. Use only the supplied telemetry. Never invent ' +
-  'metrics, repos, or credentials. Write 6-9 short lines in a calm, precise research-editorial ' +
-  'voice. Open with the Jev classification. Name one flagship artifact, one stack move, one gap ' +
-  'patch, and one target-specific first action. No markdown headings. No emojis.';
 
 export function buildDossierPrompt(
   profile: ProofOfWorkProfile,
@@ -58,11 +43,6 @@ function extractOpenAiText(chunk: unknown): string {
   return parsed.choices?.[0]?.delta?.content ?? '';
 }
 
-function extractGeminiText(chunk: unknown): string {
-  const parsed = chunk as GeminiChunk;
-  return parsed.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('') ?? '';
-}
-
 function extractOpenAiMessage(chunk: unknown): string {
   const parsed = chunk as OpenAiChunk;
   return parsed.choices?.[0]?.message?.content ?? '';
@@ -80,13 +60,43 @@ function extractErrorText(text: string): string {
   return text.slice(0, 220);
 }
 
-async function readSse(
-  response: Response,
-  kind: 'openai' | 'gemini',
-  onToken: (token: string) => void,
-  signal?: AbortSignal
-): Promise<string> {
-  if (!response.body) throw new Error('The LLM provider returned an empty stream.');
+const EDGE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/llm-stream`;
+
+export async function streamDossier({
+  profile,
+  target,
+  onToken,
+  signal,
+}: StreamDossierOptions): Promise<string> {
+  if (signal?.aborted) throw new DOMException('Synthesis aborted', 'AbortError');
+
+  const user = buildDossierPrompt(profile, target);
+
+  const response = await fetch(EDGE_FUNCTION_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ prompt: user }),
+    signal,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`River AI ${response.status}: ${extractErrorText(text)}`);
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) {
+    const parsed = (await response.json()) as unknown;
+    const full = extractOpenAiMessage(parsed);
+    if (!full) throw new Error('River AI returned no completion text.');
+    onToken(full);
+    return full;
+  }
+
+  if (!response.body) throw new Error('River AI returned an empty stream.');
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -113,7 +123,7 @@ async function readSse(
       } catch {
         continue;
       }
-      const token = kind === 'gemini' ? extractGeminiText(parsed) : extractOpenAiText(parsed);
+      const token = extractOpenAiText(parsed);
       if (token) {
         full += token;
         onToken(token);
@@ -121,81 +131,6 @@ async function readSse(
     }
   }
 
-  return full;
-}
-
-export async function streamDossier({
-  provider,
-  apiKey,
-  model,
-  profile,
-  target,
-  onToken,
-  signal,
-}: StreamDossierOptions): Promise<string> {
-  const info = LLM_PROVIDERS[provider];
-  const key = apiKey.trim();
-  if (!key) throw new Error(`Add a ${info.label} API key to start live System-2 synthesis.`);
-  if (signal?.aborted) throw new DOMException('Synthesis aborted', 'AbortError');
-
-  const system = DOSSIER_SYSTEM_PROMPT;
-  const user = buildDossierPrompt(profile, target);
-  const resolvedModel = model.trim() || info.model;
-
-  let response: Response;
-  if (info.kind === 'gemini') {
-    const url = `${info.endpoint}/${encodeURIComponent(resolvedModel)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(key)}`;
-    response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: 'user', parts: [{ text: user }] }],
-        generationConfig: { temperature: 0.5 },
-      }),
-      signal,
-    });
-  } else {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${key}`,
-      Accept: 'text/event-stream',
-    };
-    if (provider === 'openrouter') {
-      headers['HTTP-Referer'] = window.location.origin;
-      headers['X-Title'] = 'LockedIn Optimus';
-    }
-    response = await fetch(info.endpoint, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: resolvedModel,
-        stream: true,
-        temperature: 0.5,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ],
-      }),
-      signal,
-    });
-  }
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`${info.label} ${response.status}: ${extractErrorText(text)}`);
-  }
-
-  const contentType = response.headers.get('content-type') ?? '';
-  if (contentType.includes('application/json')) {
-    const parsed = (await response.json()) as unknown;
-    const full = info.kind === 'gemini' ? extractGeminiText(parsed) : extractOpenAiMessage(parsed);
-    if (!full) throw new Error(`${info.label} returned no completion text.`);
-    onToken(full);
-    return full;
-  }
-
-  const full = await readSse(response, info.kind, onToken, signal);
-  if (!full) throw new Error(`${info.label} streamed zero tokens. Check the model and key.`);
+  if (!full) throw new Error('River AI streamed zero tokens.');
   return full;
 }

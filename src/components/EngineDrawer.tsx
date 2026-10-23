@@ -5,10 +5,7 @@ import {
   Check,
   Copy,
   Cpu,
-  Eye,
-  EyeOff,
   Flame,
-  KeyRound,
   Play,
   ShieldCheck,
   SlidersHorizontal,
@@ -18,9 +15,8 @@ import {
 } from 'lucide-react';
 import type { AgentSpec, CustomTargetAnalysis, EngineConfig } from '@/types/engine';
 import type { ProofOfWorkProfile } from '@/types/optimus';
-import { getEngineMode } from '@/services/engineConfig';
 import { buildDossierPrompt, streamDossier } from '@/services/llmClient';
-import { buildJevRequest, buildJevResponse, runJevEndpoint } from '@/services/jev';
+import { buildJevRequest, buildJevResponse } from '@/services/jev';
 import { soundEngine } from '@/utils/soundEngine';
 import AGENTS_MD from '@/agents/AGENTS.md?raw';
 import ORCHESTRATOR_MD from '@/agents/optimus-orchestrator.md?raw';
@@ -47,7 +43,7 @@ const AGENT_SPECS: AgentSpec[] = [
     id: 'jev',
     fileName: 'jev-system1-classifier.md',
     title: 'Jev System-1 Classifier',
-    role: 'Parallel calibration heads, live endpoint mode',
+    role: 'Parallel calibration heads, deterministic mode',
     content: JE_V_MD,
   },
   {
@@ -76,42 +72,6 @@ interface EngineDrawerProps {
   onClose: () => void;
   profile: ProofOfWorkProfile | null;
   target: CustomTargetAnalysis | null;
-}
-
-function SecretInput({
-  value,
-  onChange,
-  placeholder,
-  label,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  label: string;
-}) {
-  const [revealed, setRevealed] = useState(false);
-  return (
-    <div className="relative">
-      <input
-        type={revealed ? 'text' : 'password'}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="field-input !pr-10"
-        autoComplete="off"
-        spellCheck={false}
-        aria-label={label}
-      />
-      <button
-        type="button"
-        onClick={() => setRevealed((prev) => !prev)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:text-primary"
-        aria-label={revealed ? 'Hide key' : 'Reveal key'}
-      >
-        {revealed ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-      </button>
-    </div>
-  );
 }
 
 function Section({
@@ -162,13 +122,9 @@ export default function EngineDrawer({
   const [docId, setDocId] = useState('agents');
   const [copied, setCopied] = useState(false);
   const [jevView, setJevView] = useState<'request' | 'response'>('request');
-  const [jevResult, setJevResult] = useState<unknown>(null);
-  const [jevError, setJevError] = useState<string | null>(null);
-  const [jevRunning, setJevRunning] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [streamText, setStreamText] = useState('');
   const [streamError, setStreamError] = useState<string | null>(null);
-  const jevAbortRef = useRef<AbortController | null>(null);
   const streamAbortRef = useRef<AbortController | null>(null);
   const profileStamp = profile?.generatedAt ?? 0;
 
@@ -178,7 +134,6 @@ export default function EngineDrawer({
 
   useEffect(() => {
     if (open) return;
-    jevAbortRef.current?.abort();
     streamAbortRef.current?.abort();
   }, [open]);
 
@@ -197,21 +152,16 @@ export default function EngineDrawer({
   }, [open, onClose]);
 
   useEffect(() => {
-    setJevResult(null);
-    setJevError(null);
+    setStreamText('');
+    setStreamError(null);
   }, [profileStamp]);
-
-  const mode = getEngineMode(config);
-  const liveCount = [config.firecrawlKey, config.llmKey, config.jevEndpoint].filter((value) =>
-    value.trim()
-  ).length;
 
   const jevRequest = useMemo(
     () => (profile ? buildJevRequest(profile, target) : null),
     [profile, target]
   );
   const localJevResponse = useMemo(() => (profile ? buildJevResponse(profile) : null), [profile]);
-  const jevDisplay = jevView === 'request' ? jevRequest : (jevResult ?? localJevResponse);
+  const jevDisplay = jevView === 'request' ? jevRequest : localJevResponse;
 
   const activeSpec = AGENT_SPECS.find((spec) => spec.id === docId) ?? AGENT_SPECS[0];
 
@@ -234,9 +184,6 @@ export default function EngineDrawer({
     soundEngine.playSonarPing();
     try {
       await streamDossier({
-        provider: config.llmProvider,
-        apiKey: config.llmKey,
-        model: config.llmModel,
         profile,
         target,
         onToken: (token) => setStreamText((prev) => prev + token),
@@ -249,25 +196,6 @@ export default function EngineDrawer({
       }
     } finally {
       setStreaming(false);
-    }
-  };
-
-  const runJev = async () => {
-    if (!profile || !jevRequest) return;
-    const controller = new AbortController();
-    jevAbortRef.current = controller;
-    setJevRunning(true);
-    setJevError(null);
-    try {
-      const result = await runJevEndpoint(config.jevEndpoint, config.jevKey, jevRequest, controller.signal);
-      setJevResult(result);
-      setJevView('response');
-    } catch (e) {
-      if (!(e instanceof DOMException && e.name === 'AbortError')) {
-        setJevError(e instanceof Error ? e.message : 'Jev endpoint request failed.');
-      }
-    } finally {
-      setJevRunning(false);
     }
   };
 
@@ -292,18 +220,14 @@ export default function EngineDrawer({
               Engine Config &amp; AGENTS.md
             </h2>
             <p className="mt-1 hidden text-[10px] leading-relaxed text-muted sm:block">
-              Local engine with optional live Firecrawl, Jev, and synthesis keys.
+              Backend-secured engine. Firecrawl and River AI keys are held server-side.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span
-              className={`rounded-full border px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.06em] ${
-                mode === 'live'
-                  ? 'border-primary/40 bg-primary/10 text-primary'
-                  : 'border-subtle bg-surface text-muted'
-              }`}
+              className="rounded-full border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[8px] font-bold uppercase tracking-[0.06em] text-primary"
             >
-              {mode === 'live' ? `Live · ${liveCount}/3` : 'Local'}
+              Live · Backend
             </span>
             <button
               onClick={onClose}
@@ -343,70 +267,33 @@ export default function EngineDrawer({
         <div className="flex-1 overflow-y-auto p-3.5">
           {tab === 'config' ? (
             <div className="space-y-3.5">
-              <div
-                className={`rounded border-1.5 p-3 text-[10px] leading-relaxed ${
-                  mode === 'live'
-                    ? 'border-accent-cyan/40 bg-accent-cyan/5 text-accent-cyan'
-                    : 'border-primary/30 bg-primary/5 text-primary'
-                }`}
-              >
-                {mode === 'live' ? (
-                  <>
-                    <b>Live mode active.</b> {liveCount} of 3 integrations configured. Firecrawl
-                    scrapes the Autopsy URLs, synthesis streams the dossier, and Jev forwards the
-                    exact structured payload. Keys stay in this browser session only.
-                  </>
-                ) : (
-                  <>
-                    <b>Local mode active.</b> No keys required: live unauthenticated GitHub REST
-                    telemetry + built-in deterministic calibration + cached Firecrawl dataset.
-                    Every first click works without a key.
-                  </>
-                )}
+              <div className="rounded border-1.5 border-primary/30 bg-primary/5 p-3 text-[10px] leading-relaxed text-primary">
+                <b>Backend-secured live mode.</b> Firecrawl scraping and River AI synthesis are
+                proxied through Supabase Edge Functions. API keys are stored as server-side secrets
+                and never reach the browser. GitHub telemetry and Jev calibration remain local.
               </div>
 
               <Section
                 icon={<Flame className="h-3.5 w-3.5 text-accent-amber" />}
                 title="Firecrawl scrape"
-                status={config.firecrawlKey.trim() ? 'Configured' : 'Local'}
-                statusTone={config.firecrawlKey.trim() ? 'live' : 'local'}
+                status="Live"
+                statusTone="live"
               >
-                <SecretInput
-                  label="Firecrawl API key"
-                  value={config.firecrawlKey}
-                  onChange={(value) => onChange({ ...config, firecrawlKey: value })}
-                  placeholder="Paste Firecrawl key"
-                />
                 <p className="font-mono text-[9px] leading-relaxed text-muted">
-                  POST https://api.firecrawl.dev/v1/scrape · markdown extraction · paste any role or
-                  hackathon URL into the Autopsy bar to route it through this key.
+                  POST /functions/v1/firecrawl-scrape · markdown extraction · paste any role or
+                  hackathon URL into the Autopsy bar to route it through the server-side Firecrawl key.
                 </p>
-                {!config.firecrawlKey.trim() && (
-                  <p className="font-mono text-[9px] leading-relaxed text-primary">
-                    No key: the Autopsy bar still returns a full calibrated card from the cached
-                    dataset, labeled CACHED.
-                  </p>
-                )}
               </Section>
 
               <Section
                 icon={<Cpu className="h-3.5 w-3.5 text-accent-cyan" />}
                 title="System-2 synthesis · streaming dossier"
-                status={config.llmKey.trim() ? 'Configured' : 'Local'}
-                statusTone={config.llmKey.trim() ? 'live' : 'local'}
+                status="Live"
+                statusTone="live"
               >
-                <label className="block">
-                  <span className="mono-label mb-1 block">Synthesis key</span>
-                  <SecretInput
-                    label="Synthesis API key"
-                    value={config.llmKey}
-                    onChange={(value) => onChange({ ...config, llmKey: value })}
-                    placeholder="Paste synthesis API key"
-                  />
-                </label>
                 <p className="font-mono text-[9px] leading-relaxed text-muted">
-                  With a key, synthesis streams the dossier from the configured backend. Without
-                  one, the deterministic dossier stays active.
+                  River AI · {config.llmModel} · streamed through /functions/v1/llm-stream with the
+                  server-side key.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {streaming ? (
@@ -420,7 +307,7 @@ export default function EngineDrawer({
                   ) : (
                     <button
                       onClick={() => void runStream()}
-                      disabled={!profile || !config.llmKey.trim()}
+                      disabled={!profile}
                       className="btn-primary !px-3 !py-2 !text-[10px] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <Play className="h-3.5 w-3.5" />
@@ -430,11 +317,6 @@ export default function EngineDrawer({
                   {!profile && (
                     <span className="self-center font-mono text-[9px] text-muted">
                       Build a GitHub profile to unlock.
-                    </span>
-                  )}
-                  {profile && !config.llmKey.trim() && (
-                    <span className="self-center font-mono text-[9px] text-accent-amber">
-                      Add a key to stream; deterministic dossier stays active.
                     </span>
                   )}
                 </div>
@@ -454,7 +336,7 @@ export default function EngineDrawer({
                     )}
                   </div>
                 )}
-                {profile && config.llmKey.trim() && !streaming && !streamText && !streamError && (
+                {profile && !streaming && !streamText && !streamError && (
                   <p className="font-mono text-[8px] text-muted">
                     Prompt preview: {buildDossierPrompt(profile, target).split('\n')[0]}
                   </p>
@@ -462,33 +344,11 @@ export default function EngineDrawer({
               </Section>
 
               <Section
-                icon={<KeyRound className="h-3.5 w-3.5 text-primary" />}
-                title="System-1 · calibration endpoint"
-                status={config.jevEndpoint.trim() ? 'Configured' : 'Local'}
-                statusTone={config.jevEndpoint.trim() ? 'live' : 'local'}
+                icon={<Zap className="h-3.5 w-3.5 text-primary" />}
+                title="System-1 · Jev calibration"
+                status="Local"
+                statusTone="local"
               >
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="mono-label mb-1 block">Endpoint URL</span>
-                    <input
-                      value={config.jevEndpoint}
-                      onChange={(e) => onChange({ ...config, jevEndpoint: e.target.value })}
-                      placeholder="https://your-endpoint.example/v1/score"
-                      className="field-input !py-2 text-xs"
-                      autoComplete="off"
-                      spellCheck={false}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mono-label mb-1 block">Endpoint key</span>
-                    <SecretInput
-                      label="Jev endpoint key"
-                      value={config.jevKey}
-                      onChange={(value) => onChange({ ...config, jevKey: value })}
-                      placeholder="Paste Jev endpoint key"
-                    />
-                  </label>
-                </div>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setJevView('request')}
@@ -511,7 +371,7 @@ export default function EngineDrawer({
                     Calibration returned
                   </button>
                   <span className="ml-auto font-mono text-[8px] uppercase tracking-[0.06em] text-muted">
-                    {jevResult ? 'live response' : 'deterministic local'}
+                    deterministic local
                   </span>
                 </div>
                 <pre className="max-h-[260px] overflow-auto rounded border border-subtle bg-canvas p-2.5 font-mono text-[9px] leading-relaxed text-content">
@@ -519,26 +379,10 @@ export default function EngineDrawer({
                     ? JSON.stringify(jevDisplay, null, 2)
                     : '{\n  "status": "awaiting_profile",\n  "hint": "Build a GitHub profile, then reopen this drawer to inspect the exact calibration payload and distribution."\n}'}
                 </pre>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => void runJev()}
-                    disabled={!profile || !config.jevEndpoint.trim() || jevRunning}
-                    className="btn-ghost !px-3 !py-2 !text-[10px]"
-                  >
-                    {jevRunning ? 'Posting payload…' : 'Test Jev Endpoint'}
-                  </button>
-                  {jevError && (
-                    <span className="flex items-start gap-1.5 font-mono text-[9px] text-accent-coral">
-                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      {jevError}
-                    </span>
-                  )}
-                  {!config.jevEndpoint.trim() && (
-                    <span className="font-mono text-[9px] text-muted">
-                      No endpoint: the displayed distribution is the built-in calibrated math.
-                    </span>
-                  )}
-                </div>
+                <p className="font-mono text-[9px] text-muted">
+                  Jev runs as a deterministic local classifier. The displayed distribution is the
+                  built-in calibrated math.
+                </p>
               </Section>
             </div>
           ) : (
@@ -589,34 +433,11 @@ export default function EngineDrawer({
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-subtle px-3.5 py-2.5">
           <p className="flex items-center gap-1.5 font-mono text-[9px] text-muted">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-primary" />
-            Keys stay in this browser session and are sent only to the configured endpoints. Route
-            through your backend for production.
+            API keys are stored as Supabase Edge Function secrets and never exposed to the browser.
           </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                soundEngine.playKeyClick();
-                setStreamText('');
-                setStreamError(null);
-                setJevResult(null);
-                setJevError(null);
-                setJevView('request');
-                onChange({
-                  ...config,
-                  firecrawlKey: '',
-                  llmKey: '',
-                  jevEndpoint: '',
-                  jevKey: '',
-                });
-              }}
-              className="btn-ghost !px-3 !py-1.5 !text-[10px]"
-            >
-              Clear keys
-            </button>
-            <button onClick={onClose} className="btn-ghost !px-3 !py-1.5 !text-[10px]">
-              Close
-            </button>
-          </div>
+          <button onClick={onClose} className="btn-ghost !px-3 !py-1.5 !text-[10px]">
+            Close
+          </button>
         </div>
       </div>
     </div>

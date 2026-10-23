@@ -293,35 +293,45 @@ export async function saveProfile(profile: ProofOfWorkProfile): Promise<string |
 
   if (profile.repos.length) {
     inserts.push(
-      supabase.from('repos').insert(profile.repos.map((r) => toRepoRow(profileId, r)))
+      Promise.resolve(
+        supabase.from('repos').insert(profile.repos.map((r) => toRepoRow(profileId, r)))
+      )
     );
   }
 
-  inserts.push(supabase.from('jev_runs').insert(toJevRow(profileId, profile.jev)));
+  inserts.push(Promise.resolve(supabase.from('jev_runs').insert(toJevRow(profileId, profile.jev))));
 
   if (profile.jobs.length) {
     inserts.push(
-      supabase.from('job_matches').insert(profile.jobs.map((j) => toJobRow(profileId, j)))
+      Promise.resolve(
+        supabase.from('job_matches').insert(profile.jobs.map((j) => toJobRow(profileId, j)))
+      )
     );
   }
 
   if (profile.forge.length) {
     inserts.push(
-      supabase.from('forge_recs').insert(profile.forge.map((f) => toForgeRow(profileId, f)))
+      Promise.resolve(
+        supabase.from('forge_recs').insert(profile.forge.map((f) => toForgeRow(profileId, f)))
+      )
     );
   }
 
   if (profile.scout.hackathons.length) {
     inserts.push(
-      supabase
-        .from('scout_hackathons')
-        .insert(profile.scout.hackathons.map((h) => toHackathonRow(profileId, h)))
+      Promise.resolve(
+        supabase
+          .from('scout_hackathons')
+          .insert(profile.scout.hackathons.map((h) => toHackathonRow(profileId, h)))
+      )
     );
   }
 
   if (profile.scout.news.length) {
     inserts.push(
-      supabase.from('dev_news').insert(profile.scout.news.map((n) => toNewsRow(profileId, n)))
+      Promise.resolve(
+        supabase.from('dev_news').insert(profile.scout.news.map((n) => toNewsRow(profileId, n)))
+      )
     );
   }
 
@@ -438,17 +448,12 @@ type EngineConfigRow = {
 export async function loadEngineConfigFromDb(): Promise<EngineConfig | null> {
   const { data, error } = await supabase
     .from('engine_configs')
-    .select('*')
+    .select('llm_model')
     .eq('is_active', true)
     .maybeSingle();
   if (error || !data) return null;
   return {
-    firecrawlKey: data.firecrawl_key ?? '',
-    llmProvider: data.llm_provider as EngineConfig['llmProvider'],
-    llmKey: data.llm_key ?? '',
     llmModel: data.llm_model ?? '',
-    jevEndpoint: data.jev_endpoint ?? '',
-    jevKey: data.jev_key ?? '',
   };
 }
 
@@ -458,12 +463,12 @@ export async function saveEngineConfigToDb(
 ): Promise<void> {
   const row: EngineConfigRow = {
     label,
-    llm_provider: config.llmProvider,
+    llm_provider: 'river',
     llm_model: config.llmModel,
-    jev_endpoint: config.jevEndpoint,
-    firecrawl_key: config.firecrawlKey,
-    llm_key: config.llmKey,
-    jev_key: config.jevKey,
+    jev_endpoint: null,
+    firecrawl_key: null,
+    llm_key: null,
+    jev_key: null,
     is_active: true,
   };
 

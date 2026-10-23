@@ -15,20 +15,6 @@ export interface TargetMeta {
   kind: CustomTargetKind;
 }
 
-interface FirecrawlResponse {
-  success?: boolean;
-  data?: {
-    markdown?: string;
-    metadata?: {
-      title?: string;
-      description?: string;
-      sourceURL?: string;
-      statusCode?: number;
-    };
-  };
-  error?: string;
-}
-
 const CACHED_SKILLS = [
   'TypeScript',
   'React',
@@ -142,46 +128,52 @@ export function buildCachedScrape(url: string): ScrapeBundle {
   };
 }
 
+const EDGE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/firecrawl-scrape`;
+
+interface EdgeScrapeResponse {
+  url?: string;
+  title?: string;
+  markdown?: string;
+  source?: string;
+  latencyMs?: number;
+  error?: string;
+}
+
 export async function scrapeWithFirecrawl(
   url: string,
-  apiKey: string,
   signal?: AbortSignal
 ): Promise<ScrapeBundle> {
-  const key = apiKey.trim();
-  if (!key) throw new Error('Add a Firecrawl API key to run a live scrape.');
   const started = performance.now();
-  const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+  const response = await fetch(EDGE_FUNCTION_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${key}`,
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
     },
-    body: JSON.stringify({
-      url,
-      formats: ['markdown'],
-      onlyMainContent: true,
-      timeout: 25000,
-    }),
+    body: JSON.stringify({ url }),
     signal,
   });
+
   const text = await response.text();
-  let payload: FirecrawlResponse | null = null;
+  let payload: EdgeScrapeResponse | null = null;
   try {
-    payload = text ? (JSON.parse(text) as FirecrawlResponse) : null;
+    payload = text ? (JSON.parse(text) as EdgeScrapeResponse) : null;
   } catch {
     payload = null;
   }
+
   if (!response.ok) {
     const message = payload?.error ?? text.slice(0, 160) ?? `HTTP ${response.status}`;
-    throw new Error(`Firecrawl rejected the crawl (${response.status}): ${message}`);
+    throw new Error(`Firecrawl scrape failed (${response.status}): ${message}`);
   }
-  const markdown = payload?.data?.markdown?.trim() ?? '';
+
+  const markdown = payload?.markdown?.trim() ?? '';
   if (!markdown) throw new Error('Firecrawl returned no readable markdown for that URL.');
-  const latencyMs = Math.max(1, Math.round(performance.now() - started));
+  const latencyMs = payload?.latencyMs ?? Math.max(1, Math.round(performance.now() - started));
   const fallbackMeta = inferTargetMeta(url);
   return {
     url,
-    title: payload?.data?.metadata?.title?.trim() || fallbackMeta.title,
+    title: payload?.title?.trim() || fallbackMeta.title,
     markdown,
     source: 'firecrawl',
     latencyMs,
