@@ -12,14 +12,21 @@
     <meta name="description" content="LockedIn is the autonomous proof-of-work career platform for developers, designers, and tech professionals. Turn shipped work into calibrated opportunities, Opti-Bots, and live career intelligence." />
     <meta name="keywords" content="proof of work career platform, developer career intelligence, GitHub portfolio analysis, AI career agent, calibrated hiring probabilities, Opti-Bots" />
     <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://lockedin.dev/" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://lockedin.dev/" />
     <meta property="og:title" content="LockedIn — Resumes Lie. Proof-of-Work Ships. | AI Career Agent for Developers" />
     <meta property="og:description" content="Turn shipped work into calibrated career intelligence, live opportunities, and autonomous next moves." />
-    <meta property="og:image" content="/icon.svg" />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="LockedIn" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="LockedIn — Resumes Lie. Proof-of-Work Ships." />
     <meta name="twitter:description" content="The proof-of-work career platform powered by Optimus, Jev, Firecrawl, and profile-linked Opti-Bots." />
-    <meta name="twitter:image" content="/icon.svg" />
+    <meta name="twitter:image" content="/og-image.jpg" />
+    <meta name="twitter:image:width" content="1200" />
+    <meta name="twitter:image:height" content="630" />
     <link rel="manifest" href="/manifest.json" />
     <title>LockedIn — Resumes Lie. Proof-of-Work Ships. | AI Career Agent for Developers</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,15 +37,55 @@
         "@context": "https://schema.org",
         "@graph": [
           {
+            "@type": "Organization",
+            "name": "LockedIn",
+            "alternateName": "LockedIn Proof-of-Work Engine",
+            "url": "https://lockedin.dev",
+            "logo": "https://lockedin.dev/LockedIn-logo.svg",
+            "description": "An autonomous proof-of-work career platform that turns verified developer signals into calibrated opportunities and next actions.",
+            "sameAs": [
+              "https://github.com/lockedin",
+              "https://x.com/lockedin",
+              "https://linkedin.com/company/lockedin"
+            ]
+          },
+          {
+            "@type": "WebPage",
+            "name": "LockedIn — Resumes Lie. Proof-of-Work Ships.",
+            "description": "LockedIn is the autonomous proof-of-work career platform for developers, designers, and tech professionals. Turn shipped work into calibrated opportunities, Opti-Bots, and live career intelligence.",
+            "url": "https://lockedin.dev/",
+            "datePublished": "2026-10-21",
+            "dateModified": "2026-10-23",
+            "inLanguage": "en-US",
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "LockedIn",
+              "url": "https://lockedin.dev"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "LockedIn",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://lockedin.dev/LockedIn-logo.svg"
+              }
+            },
+            "speakable": {
+              "@type": "SpeakableSpecification",
+              "cssSelector": ["h1", "#faqs .t-acc-panel-inner", "#devnews article"]
+            }
+          },
+          {
             "@type": "SoftwareApplication",
             "name": "LockedIn",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
+            "url": "https://lockedin.dev",
             "description": "An autonomous proof-of-work career platform that turns verified developer signals into calibrated opportunities and next actions.",
             "offers": [
-              { "@type": "Offer", "name": "Free Builder", "price": "0", "priceCurrency": "USD" },
-              { "@type": "Offer", "name": "LockedIn Pro", "price": "19", "priceCurrency": "USD", "billingDuration": "P1M" },
-              { "@type": "Offer", "name": "Hiring Teams & API", "price": "199", "priceCurrency": "USD", "billingDuration": "P1M" }
+              { "@type": "Offer", "name": "Free Builder", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://lockedin.dev/#pricing" },
+              { "@type": "Offer", "name": "LockedIn Pro", "price": "19", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://lockedin.dev/#pricing" },
+              { "@type": "Offer", "name": "Hiring Teams & API", "price": "199", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "url": "https://lockedin.dev/#pricing" }
             ],
             "featureList": ["GitHub proof-of-work profiling", "Jev calibrated probability curves", "Firecrawl opportunity scouting", "Profile-linked Opti-Bots", "Counterfactual career simulator"]
           },
@@ -48,32 +95,32 @@
               {
                 "@type": "Question",
                 "name": "What is LockedIn and why does it replace LinkedIn?",
-                "acceptedAnswer": { "@type": "Answer", "text": "LinkedIn is built for corporate theatre and keyword-stuffed resumes. LockedIn is an autonomous career intelligence platform for developers, designers, and tech pros who actually build. It turns verified proof-of-work into live job matches, hackathon targets, and autonomous applications." }
+                "acceptedAnswer": { "@type": "Answer", "text": "LinkedIn is built for corporate theatre and keyword-stuffed resumes. LockedIn is an autonomous career intelligence platform for developers, designers, and tech pros who actually build. When you drop your GitHub, X, LinkedIn, and portfolio links and hit Lock In, the Optimus Agentic Engine turns your verified proof-of-work into live job matches, hackathon targets, and autonomous applications." }
               },
               {
                 "@type": "Question",
-                "name": "What happens in the first 10 seconds after I hit <•> to Lock In?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Repositories, commit velocity, languages, and social footprint project onto an interactive 3D Palantir centerpiece surrounded by Dev News, the Jev Probability Curve Simulator, Firecrawl Scout Report, and Eligibility & Auto-Apply command cards." }
+                "name": "What happens in the first 10 seconds after I hit Lock In?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Your repositories, commit velocity, languages, and social footprint project onto an interactive 3D Palantir centerpiece surrounded by four live command cards: your personalized Dev News Carousel, the TypeSafe Jev Probability Curve Simulator, your Firecrawl Scout Report, and Eligibility & Auto-Apply." }
               },
               {
                 "@type": "Question",
                 "name": "How does TypeSafe AI's Jev System-1 model calculate my hiring odds?",
-                "acceptedAnswer": { "@type": "Answer", "text": "LockedIn pairs a System-2 LLM with TypeSafe AI's System-1 Jev model, trained via Reinforcement Learning for Calibrated Decisions, to compute 24 parallel, type-safe hiring and hackathon acceptance probabilities in about 140 milliseconds with confidence intervals." }
+                "acceptedAnswer": { "@type": "Answer", "text": "Standard LLMs guess probabilities and hallucinate. LockedIn pairs a System-2 LLM with TypeSafe AI's System-1 Jev model — trained via Reinforcement Learning for Calibrated Decisions (RLCD) — to compute 24 parallel, type-safe hiring and hackathon acceptance probabilities in approximately 140 milliseconds with confidence intervals and 0.0% schema error." }
               },
               {
                 "@type": "Question",
                 "name": "What are Opti-Bots and how do they work automatically?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Every link in the hero bar can spawn a dedicated mini-agent. GitHub Opti-Bot hunts open-source issues, X Opti-Bot scrapes founder hiring threads and hackathons, and LinkedIn Opti-Bot tracks high-fit engineering roles without feed noise." }
+                "acceptedAnswer": { "@type": "Answer", "text": "Every link you drop in the hero bar spawns a dedicated mini-agent. Your GitHub Opti-Bot hunts high-leverage open-source issues to deepen your portfolio; your X Opti-Bot scrapes founder hiring threads and flash hackathons; and your LinkedIn Opti-Bot tracks high-fit engineering roles without feed noise. You can also deploy custom Opti-Bots on demand." }
               },
               {
                 "@type": "Question",
                 "name": "How does the Counterfactual Simulator help me level up?",
-                "acceptedAnswer": { "@type": "Answer", "text": "The Jev Simulator lets you toggle recommended open-source PRs or certificates and watch your calibrated job acceptance curve shift in real time, showing which contribution increases your hiring odds most." }
+                "acceptedAnswer": { "@type": "Answer", "text": "Inside the Jev Simulator, you can toggle recommended Open-Source PRs or Certificates and watch your calibrated job acceptance curve shift from its baseline to an improved state in real time — showing you which exact 4-hour contribution increases your hiring odds the most before you write a line of code." }
               },
               {
                 "@type": "Question",
                 "name": "Can I test LockedIn right now without creating an account or adding API keys?",
-                "acceptedAnswer": { "@type": "Answer", "text": "Yes. Drop any public GitHub username or link into the command bar, or click a preset, to experience live GitHub REST profiling, deterministic Jev probability curves, and Firecrawl opportunity scouting immediately." }
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes. Drop any public GitHub username or link into the command bar, or click one of the 1-click presets, to experience live GitHub REST profiling, deterministic Jev probability curves, and Firecrawl opportunity scouting immediately." }
               }
             ]
           }
